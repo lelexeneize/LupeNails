@@ -8,7 +8,7 @@ const services = [
     duration: '60 min',
     price: '$35',
     description: 'Refuerzo de uña natural para máxima durabilidad y brillo.',
-    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=800'
   },
   {
     id: 'soft-gel',
@@ -16,7 +16,7 @@ const services = [
     duration: '90 min',
     price: '$45',
     description: 'Extensiones ligeras y flexibles con acabado natural.',
-    image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600&h=800'
   },
   {
     id: 'nail-art',
@@ -24,7 +24,7 @@ const services = [
     duration: '30+ min',
     price: '+ $15',
     description: 'Diseños personalizados pintados a mano o 3D.',
-    image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600&h=800'
   },
   {
     id: 'semi-perm',
@@ -32,7 +32,7 @@ const services = [
     duration: '45 min',
     price: '$25',
     description: 'Color impecable que dura hasta 3 semanas.',
-    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=800&fit=crop&crop=top'
   }
 ];
 

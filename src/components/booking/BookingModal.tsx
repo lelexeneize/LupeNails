@@ -42,7 +42,7 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         date: `${selectedDate} de Mayo 2026`,
         time: selectedTime,
         status: 'pending',
-        price: '',
+        price: 0,
         couponCode: '',
         discountApplied: 0,
         finalPrice: 0,

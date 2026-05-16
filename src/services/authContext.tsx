@@ -27,14 +27,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (user) {
         const adminDoc = await getDoc(doc(db, 'admins', user.uid));
         setIsAdmin(adminDoc.exists());
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          role: adminDoc.exists() ? 'admin' : 'client',
-          lastSeen: new Date().toISOString()
-        }, { merge: true });
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            role: adminDoc.exists() ? 'admin' : 'client',
+            createdAt: new Date().toISOString()
+          });
+        }
       } else {
         setIsAdmin(false);
       }

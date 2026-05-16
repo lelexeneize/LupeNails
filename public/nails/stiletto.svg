@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200" class="w-full h-full">
+  <defs>
+    <linearGradient id="stilettoSkin" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#F3E5D8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E8D5C4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Nail bed -->
+  <path d="M30 80 C 30 80, 25 60, 35 40 C 42 25, 55 20, 65 40 C 72 60, 68 80, 68 80" 
+        fill="#FFDFC4" stroke="#E08862" stroke-width="1"/>
+  <!-- Stiletto nail - sharp pointed -->
+  <path d="M35 80 C 35 100, 38 120, 41 140 C 45 160, 49 180, 50 192 C 51 180, 55 160, 59 140 C 62 120, 65 100, 65 80" 
+        fill="#FFD1DC" stroke="#C484A0" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Highlight -->
+  <path d="M38 90 C 40 105, 43 120, 45 135" 
+        stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+</svg>

@@ -1,0 +1,30 @@
+{
+  "agent": "lele-design-agent",
+  "profiles": {
+    "default": {
+      "model": "Qwen3-4B-AgentCoder:64k",
+      "system": "You are a senior software engineer working on LeleNails project.\n- **Always think step-by-step in English** (internal reasoning, planning, and code comments).\n- **Always respond in Spanish (Argentine variant)**.\n- Follow all security and best practices in development.",
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "num_ctx": 65536,
+      "metrics": {
+        "language": {
+          "internal": "en",
+          "response": "es_AR"
+        }
+      }
+    }
+  },
+  "rules": {
+    "language": {
+      "internal_reasoning": "en",
+      "response": "es_AR"
+    }
+  },
+  "workspace": {
+    "root": "."
+  },
+  "skills": {
+    "path": ".opencode/skills"
+  }
+}

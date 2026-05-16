@@ -42,6 +42,7 @@ export const Hero = ({ onBookingClick }: { onBookingClick: () => void }) => {
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => document.getElementById('designs')?.scrollIntoView({ behavior: 'smooth' })}
               className="premium-button border border-brand-dark/10 w-full sm:w-auto hover:bg-white transition-colors"
             >
               Ver Diseños

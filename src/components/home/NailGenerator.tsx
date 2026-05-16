@@ -5,13 +5,14 @@ import { geminiService } from '../../services/geminiService';
 import { generateNailImage } from '../../services/imageGenerationService';
 import { useAuth } from '../../services/authContext';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../lib/firebase';
 
 const SHAPES = [
-  { id: 'almond', name: 'Almendra', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=300' },
-  { id: 'coffin', name: 'Coffin', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=300' },
-  { id: 'stiletto', name: 'Stiletto', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=300' },
-  { id: 'square', name: 'Cuadrada', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=300' },
+{ id: 'almond', name: 'Almendra', image: '/nails/almond-real.png' },
+{ id: 'coffin', name: 'Coffin', image: '/nails/coffin-real.png' },
+{ id: 'stiletto', name: 'Stiletto', image: '/nails/stiletto-real.png' },
+{ id: 'square', name: 'Cuadrada', image: '/nails/square-real.png' },
 ];
 
 const COLORS = [
@@ -72,7 +73,7 @@ const ACCESSORIES = [
   { id: 'gold-flakes', name: 'Hojas de Oro', icon: Sparkles },
 ];
 
-export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, onClose: () => void, onFinish: (design: any) => void }) => {
+export const NailGenerator = ({ isOpen, onClose, onFinish, initialDesign }: { isOpen: boolean, onClose: () => void, onFinish: (design: any) => void, initialDesign?: any }) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -86,6 +87,28 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
     art: 'none',
     accessory: 'none'
   });
+
+  // Apply initialDesign when modal opens
+  useEffect(() => {
+    if (isOpen && initialDesign) {
+      setDesign({
+        shape: initialDesign.shape || 'almond',
+        color: initialDesign.color || 'rose-glaze',
+        effect: initialDesign.effect || 'Brillante',
+        art: initialDesign.art || 'none',
+        accessory: initialDesign.accessory || 'none',
+      });
+      setStep(1);
+      setAiResult(null);
+      setGeneratedImage(null);
+      setImageError(false);
+    } else if (!isOpen) {
+      setStep(1);
+      setAiResult(null);
+      setGeneratedImage(null);
+      setImageError(false);
+    }
+  }, [isOpen, initialDesign]);
 
   const handleNext = () => setStep(s => s + 1);
 
@@ -111,10 +134,14 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
   const handleSave = async () => {
     if (!user) return alert('Debes iniciar sesión para guardar tu diseño');
     try {
-      // Use different placeholders based on design
-      let imageUrl = 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600&auto=format&fit=crop';
-      if (design.art !== 'none') imageUrl = 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600';
-      if (design.effect === 'Chrome') imageUrl = 'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600';
+      let imageUrl = '';
+      if (generatedImage) {
+        const blobRes = await fetch(generatedImage);
+        const blob = await blobRes.blob();
+        const storageRef = ref(storage, `designs/${user.uid}/${Date.now()}.png`);
+        await uploadBytes(storageRef, blob);
+        imageUrl = await getDownloadURL(storageRef);
+      }
 
       await addDoc(collection(db, 'designs'), {
         ...design,
@@ -143,54 +170,70 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
         <motion.div 
           initial={{ y: 50, scale: 0.95 }}
           animate={{ y: 0, scale: 1 }}
-          className="bg-brand-nude w-full max-w-6xl h-full md:h-[85vh] rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative"
+          className="bg-brand-nude w-full max-w-6xl h-dvh md:h-[85vh] rounded-none md:rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative"
         >
-          <button onClick={onClose} className="absolute top-8 right-8 p-3 bg-white/50 hover:bg-white rounded-full transition-colors z-50">
+          <button onClick={onClose} className="absolute top-4 right-4 md:top-8 md:right-8 p-3 bg-white/50 hover:bg-white rounded-full transition-colors z-50">
             <X className="w-5 h-5" />
           </button>
 
-          {/* Preview Panel */}
-          <div className="flex-1 bg-white relative p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-brand-dark/5">
-            <div className="absolute top-12 left-12">
-              <span className="text-[10px] font-accent uppercase tracking-[0.4em] text-stone-400">
-                {step === 6 ? 'Diseño Final' : 'Vista Previa'}
-              </span>
-              <h2 className="text-4xl italic font-display">{aiResult?.name || 'Tu creación'}</h2>
-            </div>
-
-            <motion.div 
-              key={JSON.stringify(design) + step}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="relative w-full max-w-sm aspect-[4/5] flex items-center justify-center"
-            >
-              <div className="absolute inset-0 bg-brand-rose/10 blur-[100px] rounded-full" />
-              
-              {step === 5 ? (
-                <div className="flex flex-col items-center gap-6">
-                  <div className="relative">
-                    <Loader2 className="w-16 h-16 text-brand-gold animate-spin" />
-                    <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-brand-gold animate-pulse" />
-                  </div>
-                  <p className="text-sm font-accent uppercase tracking-[0.3em] text-brand-dark animate-pulse">Revelando tu estilo...</p>
+          {/* Preview Panel — hidden on mobile during steps 1-4 */}
+          <div className={`flex-1 bg-white relative flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-brand-dark/5 ${step <= 4 ? 'hidden md:flex' : 'flex'} p-6 md:p-12`}>
+            {step < 5 ? (
+              <>
+                <div className="absolute top-6 left-6 md:top-12 md:left-12">
+                  <span className="text-[10px] font-accent uppercase tracking-[0.4em] text-stone-400">Vista Previa</span>
+                  <h2 className="text-2xl md:text-4xl italic font-display">Tu creación</h2>
                 </div>
-              ) : step === 6 ? (
+
+                <motion.div 
+                  key={JSON.stringify(design) + step}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="relative flex items-center justify-center"
+                >
+                  <div className="absolute inset-0 bg-brand-rose/10 blur-[100px] rounded-full" />
+                  <div className="relative z-10 w-28 h-56 md:w-32 md:h-64 bg-white rounded-t-full rounded-b-xl border-4 border-brand-nude shadow-2xl overflow-hidden transition-all duration-500"
+                    style={{ 
+                      backgroundColor: COLORS.find(c => c.id === design.color)?.hex || (design.color.startsWith('#') ? design.color : '#FFFFFF'),
+                      borderRadius: design.shape === 'stiletto' ? '200px 200px 40px 40px' : '80px 80px 40px 40px',
+                    }}
+                  >
+                    {design.effect === 'Chrome' && (
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/50 to-transparent animate-shimmer" />
+                    )}
+                    {design.effect === 'Glazed' && (
+                      <div className="absolute inset-0 opacity-40 bg-gradient-to-b from-white via-transparent to-white/20" />
+                    )}
+                  </div>
+                </motion.div>
+
+                <p className="hidden md:block mt-8 text-xs font-accent text-brand-dark/40 italic">“Un diseño que parece sacado de Pinterest”</p>
+              </>
+            ) : step === 5 ? (
+              <div className="flex flex-col items-center gap-6">
+                <div className="relative">
+                  <Loader2 className="w-16 h-16 text-brand-gold animate-spin" />
+                  <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-brand-gold animate-pulse" />
+                </div>
+                <p className="text-sm font-accent uppercase tracking-[0.3em] text-brand-dark animate-pulse">Revelando tu estilo...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-4 w-full max-w-sm">
                 <motion.div 
                   initial={{ rotateY: 90 }}
                   animate={{ rotateY: 0 }}
                   transition={{ duration: 1, type: 'spring' }}
-                  className="relative group"
                 >
                   {generatedImage && !imageError ? (
                     <img 
                       src={generatedImage} 
                       onError={() => setImageError(true)}
-                      className="w-full max-w-[280px] md:max-w-sm h-auto aspect-[3/4] object-cover rounded-[3rem] shadow-2xl transition-transform duration-700" 
+                      className="w-full max-w-[260px] md:max-w-sm h-auto aspect-[3/4] object-cover rounded-[2rem] md:rounded-[3rem] shadow-2xl" 
                       alt="Nail design inspiration"
                     />
                   ) : (
-                    <div className="w-72 h-[450px] flex flex-col items-center justify-center rounded-[3rem] shadow-2xl border border-brand-dark/5 bg-brand-nude">
-                      <div className="w-32 h-64 rounded-t-full rounded-b-xl border-4 border-brand-nude shadow-2xl overflow-hidden"
+                    <div className="w-60 h-[380px] md:w-72 md:h-[450px] flex flex-col items-center justify-center rounded-[3rem] shadow-2xl border border-brand-dark/5 bg-brand-nude">
+                      <div className="w-28 h-56 md:w-32 md:h-64 rounded-t-full rounded-b-xl border-4 border-brand-nude shadow-2xl overflow-hidden"
                         style={{ 
                           backgroundColor: COLORS.find(c => c.id === design.color)?.hex || '#FFFFFF',
                           borderRadius: design.shape === 'stiletto' ? '200px 200px 40px 40px' : '80px 80px 40px 40px',
@@ -203,78 +246,52 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                           <div className="absolute inset-0 opacity-40 bg-gradient-to-b from-white via-transparent to-white/20" />
                         )}
                       </div>
-                      <p className="text-[10px] font-accent text-brand-dark/30 mt-6">Preview sin IA</p>
                     </div>
                   )}
-                  <div className="absolute inset-0 rounded-[3rem] ring-1 ring-inset ring-white/20" />
-                  <div className="absolute -right-8 bottom-12">
-                    <div className="bg-brand-dark text-white p-6 rounded-3xl shadow-xl max-w-[200px]">
-                      <Sparkles className="w-6 h-6 text-brand-gold mb-3" />
-                      <p className="text-xs italic leading-relaxed">{aiResult?.description}</p>
-                    </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-brand-gold rounded-full flex items-center justify-center">
+                    <Sparkles className="w-3 h-3 text-white" />
                   </div>
                 </motion.div>
-              ) : (
-                <div className="relative z-10 w-32 h-64 bg-white rounded-t-full rounded-b-xl border-4 border-brand-nude shadow-2xl overflow-hidden transition-all duration-500"
-                  style={{ 
-                    backgroundColor: COLORS.find(c => c.id === design.color)?.hex || (design.color.startsWith('#') ? design.color : '#FFFFFF'),
-                    borderRadius: design.shape === 'stiletto' ? '200px 200px 40px 40px' : '80px 80px 40px 40px',
-                    boxShadow: design.effect === 'Glossy' ? 'inset -10px -10px 40px rgba(255,255,255,0.4), 0 20px 40px rgba(0,0,0,0.1)' : 'none'
-                  }}
-                >
-                  {design.effect === 'Chrome' && (
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/50 to-transparent animate-shimmer" />
-                  )}
-                  {design.effect === 'Glazed' && (
-                    <div className="absolute inset-0 opacity-40 bg-gradient-to-b from-white via-transparent to-white/20" />
-                  )}
-                </div>
-              )}
 
-              {step < 5 && (
-                <div className="absolute -right-12 top-1/4 space-y-2">
-                  <Badge text={design.shape} icon={Layout} />
-                  <Badge text={design.effect} icon={Sparkles} />
-                  {design.art !== 'none' && <Badge text={ART_STYLES.find(a => a.id === design.art)?.name || ''} icon={Palette} />}
-                  {design.accessory !== 'none' && <Badge text={ACCESSORIES.find(a => a.id === design.accessory)?.name || ''} icon={Sparkles} />}
-                </div>
-              )}
-            </motion.div>
-
-            <div className="mt-12 text-center">
-              <p className="text-xs font-accent text-brand-dark/40 italic">“Un diseño que parece sacado de Pinterest”</p>
-            </div>
+                {/* Description moved BELOW the image */}
+                {aiResult?.description && (
+                  <div className="w-full bg-brand-dark text-white p-4 md:p-5 rounded-2xl shadow-xl">
+                    <p className="text-xs md:text-sm italic leading-relaxed">{aiResult.description}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Controls Panel */}
-          <div className="w-full md:w-[400px] bg-brand-nude flex flex-col p-8 md:p-12 overflow-y-auto">
-            <div className="mb-12">
-              <div className="flex gap-2 mb-8">
+          {/* Controls Panel - full screen on mobile during steps 1-4 */}
+          <div className={`w-full md:w-[400px] bg-brand-nude flex flex-col ${step <= 4 ? 'p-4 md:p-12' : 'p-4 md:p-12'} overflow-y-auto ${step <= 4 ? 'h-dvh md:h-auto' : ''}`}>
+            <div className="mb-4 md:mb-8">
+              <div className="flex gap-2 mb-4 md:mb-8">
                 {[1, 2, 3, 4].map(i => (
                   <div key={`step-dot-${i}`} className={`h-1 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-brand-dark' : 'bg-brand-dark/10'}`} />
                 ))}
               </div>
-              <h3 className="text-4xl mb-2 italic font-display">Studio Lab</h3>
+              <h3 className="text-2xl md:text-4xl mb-1 md:mb-2 italic font-display">Studio Lab</h3>
               <p className="text-[10px] font-accent uppercase tracking-[0.4em] text-stone-400">Paso {step <= 4 ? step : 4} de 4</p>
             </div>
 
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                  <h4 className="text-lg font-accent font-medium mb-6">Elige la forma base</h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <h4 className="text-base md:text-lg font-accent font-medium mb-3 md:mb-6">Elige la forma base</h4>
+                  <div className="grid grid-cols-2 gap-2 md:gap-4">
                     {SHAPES.map(s => (
                       <button 
                         key={s.id}
                         onClick={() => setDesign({ ...design, shape: s.id })}
-                        className={`p-4 rounded-3xl border transition-all ${
+                        className={`p-3 md:p-4 rounded-2xl md:rounded-3xl border transition-all ${
                           design.shape === s.id ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-dark/5 hover:border-brand-gold'
                         }`}
                       >
-                        <div className="aspect-square bg-brand-nude rounded-2xl mb-3 overflow-hidden">
+                        <div className="aspect-square bg-brand-nude rounded-xl md:rounded-2xl mb-2 md:mb-3 overflow-hidden">
                           <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-xs font-accent uppercase tracking-widest">{s.name}</span>
+                        <span className="text-[10px] md:text-xs font-accent uppercase tracking-widest">{s.name}</span>
                       </button>
                     ))}
                   </div>
@@ -283,9 +300,9 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
 
               {step === 2 && (
                 <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                  <h4 className="text-lg font-accent font-medium mb-6">Color & Efecto</h4>
+                  <h4 className="text-base md:text-lg font-accent font-medium mb-3 md:mb-6">Color & Efecto</h4>
                   
-                  <div className="flex justify-between items-end mb-4">
+                  <div className="flex justify-between items-end mb-3 md:mb-4">
                     <p className="text-[10px] font-accent uppercase tracking-widest text-brand-dark/40">Gama de Colores</p>
                     <div className="flex items-center gap-2">
                        <span className="text-[10px] font-accent uppercase tracking-widest text-brand-dark/40">Personalizado</span>
@@ -298,7 +315,7 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-3 mb-8 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="grid grid-cols-5 gap-2 md:gap-3 mb-4 md:mb-8 max-h-[140px] md:max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                     {COLORS.map(c => (
                       <button 
                         key={c.id}
@@ -316,8 +333,8 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                     ))}
                   </div>
 
-                  <p className="text-[10px] font-accent uppercase tracking-widest text-brand-dark/40 mb-4">Efecto Final</p>
-                  <div className="flex flex-wrap gap-2">
+                  <p className="text-[10px] font-accent uppercase tracking-widest text-brand-dark/40 mb-2 md:mb-4">Efecto Final</p>
+                  <div className="flex flex-wrap gap-1.5 md:gap-2">
                     {EFFECTS.map(e => (
                       <button 
                         key={e}
@@ -335,21 +352,21 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
 
               {step === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                  <h4 className="text-lg font-accent font-medium mb-6">Arte Manual</h4>
-                  <div className="grid grid-cols-1 gap-3">
+                  <h4 className="text-base md:text-lg font-accent font-medium mb-3 md:mb-6">Arte Manual</h4>
+                  <div className="grid grid-cols-1 gap-2 md:gap-3">
                     {ART_STYLES.map(art => (
                       <button 
                         key={art.id}
                         onClick={() => setDesign({...design, art: art.id})}
-                        className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
+                        className={`p-3 md:p-5 rounded-xl md:rounded-2xl border flex items-center justify-between transition-all ${
                           design.art === art.id ? 'border-brand-gold bg-brand-gold/5' : 'border-brand-dark/5 bg-white'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl ${design.art === art.id ? 'bg-brand-gold text-brand-dark' : 'bg-stone-50 text-stone-300'}`}>
-                            <art.icon className="w-5 h-5" />
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${design.art === art.id ? 'bg-brand-gold text-brand-dark' : 'bg-stone-50 text-stone-300'}`}>
+                            <art.icon className="w-4 h-4 md:w-5 md:h-5" />
                           </div>
-                          <span className="text-xs font-accent uppercase tracking-widest font-bold">{art.name}</span>
+                          <span className="text-[10px] md:text-xs font-accent uppercase tracking-widest font-bold">{art.name}</span>
                         </div>
                         {design.art === art.id && <Check className="w-4 h-4 text-brand-gold" />}
                       </button>
@@ -360,21 +377,21 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
 
               {step === 4 && (
                 <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                  <h4 className="text-lg font-accent font-medium mb-6">Accesorios & Pedrería</h4>
-                  <div className="grid grid-cols-1 gap-3">
+                  <h4 className="text-base md:text-lg font-accent font-medium mb-3 md:mb-6">Accesorios & Pedrería</h4>
+                  <div className="grid grid-cols-1 gap-2 md:gap-3">
                     {ACCESSORIES.map(acc => (
                       <button 
                         key={acc.id}
                         onClick={() => setDesign({...design, accessory: acc.id})}
-                        className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
+                        className={`p-3 md:p-5 rounded-xl md:rounded-2xl border flex items-center justify-between transition-all ${
                           design.accessory === acc.id ? 'border-brand-gold bg-brand-gold/5' : 'border-brand-dark/5 bg-white'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl ${design.accessory === acc.id ? 'bg-brand-gold text-brand-dark' : 'bg-stone-50 text-stone-300'}`}>
-                            <acc.icon className="w-5 h-5" />
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${design.accessory === acc.id ? 'bg-brand-gold text-brand-dark' : 'bg-stone-50 text-stone-300'}`}>
+                            <acc.icon className="w-4 h-4 md:w-5 md:h-5" />
                           </div>
-                          <span className="text-xs font-accent uppercase tracking-widest font-bold">{acc.name}</span>
+                          <span className="text-[10px] md:text-xs font-accent uppercase tracking-widest font-bold">{acc.name}</span>
                         </div>
                         {design.accessory === acc.id && <Check className="w-4 h-4 text-brand-gold" />}
                       </button>
@@ -437,23 +454,23 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
             </AnimatePresence>
 
             {step < 5 && (
-              <div className="mt-auto pt-8 flex gap-4">
+              <div className="mt-auto pt-3 md:pt-8 flex gap-2 md:gap-4">
                 {step > 1 && (
                   <button 
                     onClick={() => setStep(s => s - 1)}
-                    className="p-4 rounded-xl border border-brand-dark/5 bg-white hover:bg-brand-rose/20 transition-colors"
+                    className="p-3 md:p-4 rounded-lg md:rounded-xl border border-brand-dark/5 bg-white hover:bg-brand-rose/20 transition-colors"
                   >
-                    <ChevronRight className="w-5 h-5 rotate-180" />
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 rotate-180" />
                   </button>
                 )}
                 <motion.button 
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={step < 4 ? handleNext : handleGenerate}
-                  className="flex-1 premium-button bg-brand-dark text-brand-nude flex items-center justify-center gap-2"
+                  className="flex-1 premium-button bg-brand-dark text-brand-nude flex items-center justify-center gap-2 text-xs md:text-sm py-3 md:py-4"
                 >
                    {step === 4 ? 'Generar Diseño con IA' : 'Siguiente Paso'} 
-                   {step < 4 && <ChevronRight className="w-4 h-4" />}
+                   {step < 4 && <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />}
                 </motion.button>
               </div>
             )}

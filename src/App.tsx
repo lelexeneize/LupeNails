@@ -22,9 +22,15 @@ import { useAuth } from './services/authContext';
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [generatorDesign, setGeneratorDesign] = useState<any>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [view, setView] = useState<'user' | 'admin'>('user');
   const { isAdmin } = useAuth();
+
+  const openGeneratorWithDesign = (design: any) => {
+    setGeneratorDesign(design);
+    setIsGeneratorOpen(true);
+  };
 
   const toggleView = () => {
     if (isAdmin) {
@@ -128,18 +134,23 @@ export default function App() {
       <Footer onAdminClick={toggleView} />
       <BottomNav onDashboardClick={() => setIsDashboardOpen(true)} />
       <FloatingWhatsApp />
-      <AIInspiration />
+      <AIInspiration onOpenGenerator={(design) => { openGeneratorWithDesign(design); }} onBooking={() => setIsBookingOpen(true)} />
+       
       
       <ClientDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
       
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
       <NailGenerator 
         isOpen={isGeneratorOpen} 
-        onClose={() => setIsGeneratorOpen(false)} 
+        onClose={() => {
+          setIsGeneratorOpen(false);
+          setGeneratorDesign(null);
+        }} 
+        initialDesign={generatorDesign}
         onFinish={(design) => {
           setIsGeneratorOpen(false);
           setIsBookingOpen(true);
-          console.log('Design finished:', design);
+          setGeneratorDesign(null);
         }} 
       />
       

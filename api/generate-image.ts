@@ -1,6 +1,29 @@
+const RATE_LIMIT = 10;
+const WINDOW_MS = 60_000;
+const ipMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 export default async function handler(req: any, res: any) {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'prompt required' });
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ error: 'Demasiadas solicitudes. Esperá un minuto.' });
+  }
+
+  const { prompt } = req.body || {};
+  if (!prompt || typeof prompt !== 'string' || prompt.length > 500) {
+    return res.status(400).json({ error: 'Prompt inválido (máx 500 caracteres)' });
+  }
 
   try {
     const response = await fetch(
@@ -27,6 +50,6 @@ export default async function handler(req: any, res: any) {
     res.send(Buffer.from(buffer));
   } catch (err) {
     console.error('Proxy error:', err);
-    res.status(500).json({ error: 'Image generation failed' });
+    res.status(500).json({ error: 'Error generando imagen' });
   }
 }

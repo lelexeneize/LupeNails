@@ -1,128 +1,47 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function validString(field) { return field is string && field.size() > 0; }
+    function validPositiveNumber(field) { return field is number && field >= 0; }
 
-    // ─── Helpers ────────────────────────────────────────────────────────────
+    match /{document=**} { allow read, write: if false; }
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // Valida que el campo sea string no vacío
-    function validString(field) {
-      return field is string && field.size() > 0;
-    }
-
-    // Valida que el campo sea número positivo
-    function validPositiveNumber(field) {
-      return field is number && field >= 0;
-    }
-
-    // ─── Deny-all por defecto ────────────────────────────────────────────────
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // ─── /users ─────────────────────────────────────────────────────────────
-    // - Un usuario solo puede leer/editar su propio perfil
-    // - Admins pueden listar todos
-    // - Campos permitidos en update: displayName, photoURL (no role, no uid)
     match /users/{userId} {
-      allow get:    if isOwner(userId) || isAdmin();
-      allow list:   if isAdmin();
-      allow create: if isOwner(userId)
-                    && request.resource.data.uid == request.auth.uid
-                    && validString(request.resource.data.email)
-                    && request.resource.data.role == 'client'; // no puede auto-asignarse admin
-
-      allow update: if isOwner(userId)
-                    && !request.resource.data.diff(resource.data).affectedKeys()
-                        .hasAny(['uid', 'email', 'role', 'createdAt']); // campos inmutables
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.uid == request.auth.uid && validString(request.resource.data.email) && request.resource.data.role == 'client';
+      allow update: if isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'email', 'role', 'createdAt']);
     }
 
-    // ─── /admins ─────────────────────────────────────────────────────────────
-    // - NADIE puede crear admins desde el cliente (solo Firebase Admin SDK)
-    // - Cualquier usuario autenticado puede leer (necesario para isAdmin())
-    // - Solo admins pueden eliminar admins
     match /admins/{adminId} {
-      allow read:   if isSignedIn();
-      allow create: if false;  // exclusivamente via Admin SDK en backend
+      allow read: if isSignedIn();
+      allow create: if false;
       allow update: if false;
-      allow delete: if isAdmin() && request.auth.uid != adminId; // no puede borrarse a sí mismo
+      allow delete: if isAdmin() && request.auth.uid != adminId;
     }
 
-    // ─── /bookings ──────────────────────────────────────────────────────────
-    // - Usuarios solo ven/crean sus propios turnos
-    // - Usuarios NO pueden modificar precio, status ni descuentos
-    // - Admins tienen acceso completo
     match /bookings/{bookingId} {
-      allow read:   if isSignedIn()
-                    && (resource.data.userId == request.auth.uid || isAdmin());
-
-      allow create: if isSignedIn()
-                    && request.resource.data.userId == request.auth.uid
-                    && validString(request.resource.data.service)
-                    && validString(request.resource.data.date)
-                    && validString(request.resource.data.time)
-                    && request.resource.data.status == 'pending' // siempre inicia en pending
-                    && validPositiveNumber(request.resource.data.price);
-
-      // El cliente solo puede modificar campos no sensibles (ej: notas)
-      // El precio, status, descuentos y profesional solo los toca el admin
-      allow update: if isAdmin()
-                    || (isOwner(resource.data.userId)
-                        && !request.resource.data.diff(resource.data).affectedKeys()
-                            .hasAny(['price', 'finalPrice', 'discountApplied',
-                                     'status', 'professional', 'userId']));
-
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && validString(request.resource.data['service']) && validString(request.resource.data.date) && validString(request.resource.data.time) && request.resource.data.status == 'pending' && validPositiveNumber(request.resource.data.price);
+      allow update: if isAdmin() || (isOwner(resource.data.userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['price', 'finalPrice', 'discountApplied', 'status', 'professional', 'userId']));
       allow delete: if isAdmin();
     }
 
-    // ─── /designs ───────────────────────────────────────────────────────────
-    // - Diseños públicos son legibles por todos (incluso sin login)
-    // - Solo el creador o admin puede escribir
-    // - El creadorId debe coincidir con el usuario autenticado
     match /designs/{designId} {
-      allow read:   if resource.data.isPublic == true
-                    || (isSignedIn() && resource.data.creatorId == request.auth.uid)
-                    || isAdmin();
-
-      allow create: if isSignedIn()
-                    && request.resource.data.creatorId == request.auth.uid
-                    && validString(request.resource.data.imageUrl)
-                    && request.resource.data.isPublic is bool;
-
-      allow update: if (isSignedIn() && resource.data.creatorId == request.auth.uid
-                        && request.resource.data.creatorId == request.auth.uid) // no puede cambiar el creador
-                    || isAdmin();
-
-      allow delete: if (isSignedIn() && resource.data.creatorId == request.auth.uid)
-                    || isAdmin();
+      allow read: if resource.data.isPublic == true || (isSignedIn() && resource.data.creatorId == request.auth.uid) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.creatorId == request.auth.uid && validString(request.resource.data.imageUrl) && request.resource.data.isPublic is bool;
+      allow update: if (isSignedIn() && resource.data.creatorId == request.auth.uid && request.resource.data.creatorId == request.auth.uid) || isAdmin();
+      allow delete: if (isSignedIn() && resource.data.creatorId == request.auth.uid) || isAdmin();
     }
 
-    // ─── /coupons ────────────────────────────────────────────────────────────
-    // - Solo admins escriben cupones
-    // - Lectura: solo el código y descuento son necesarios para el cliente;
-    //   usamos una función para no exponer usageLimit interno
-    //   (si querés restricción total, cambiá a: allow read: if isAdmin())
     match /coupons/{couponId} {
-      allow read:   if isSignedIn();   // cambiá a isAdmin() si los cupones son internos
-      allow create: if isAdmin()
-                    && validString(request.resource.data.code)
-                    && validPositiveNumber(request.resource.data.discount)
-                    && request.resource.data.isActive is bool;
+      allow read: if isAdmin();
+      allow create: if isAdmin() && validString(request.resource.data.code) && validPositiveNumber(request.resource.data.discount) && request.resource.data.isActive is bool;
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
-
   }
 }
