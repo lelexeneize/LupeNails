@@ -1,7 +1,7 @@
 function buildPrompt(design: {
   shape: string; color: string; effect: string; art: string; accessory: string;
 }): string {
-  const shapeMap: Record<string, string> = { almond: 'almond shaped', coffin: 'coffin shaped', stiletto: 'stiletto shaped', square: 'square shaped' };
+  const shapeMap: Record<string, string> = { almond: 'almond', coffin: 'coffin', stiletto: 'stiletto', square: 'square' };
   const colorMap: Record<string, string> = {
     'nude-silk': 'nude silk', 'milky-white': 'milky white', latte: 'latte', 'sand-dune': 'sand dune', vanilla: 'vanilla',
     'rose-glaze': 'rose glaze', 'peachy-pink': 'peachy pink', bubblegum: 'bubblegum', 'hot-pink': 'hot pink', mauve: 'mauve',
@@ -11,30 +11,18 @@ function buildPrompt(design: {
     onyx: 'onyx black', 'deep-espresso': 'deep espresso', charcoal: 'charcoal', plum: 'plum',
     'neon-lime': 'neon lime', 'electric-blue': 'electric blue', 'sun-yellow': 'sun yellow'
   };
-  const artMap: Record<string, string> = { none: '', minimal: 'with minimalist line art', marble: 'with marble effect', floral: 'with hand-painted floral details', french: 'with modern french tip' };
-  const accMap: Record<string, string> = { none: '', pearls: 'with micro pearl embellishments', crystals: 'with Swarovski crystal details', 'gold-flakes': 'with gold leaf accents' };
-
-  return `Professional macro photo of ${shapeMap[design.shape] || 'almond shaped'} nails with ${colorMap[design.color] || design.color} color, ${design.effect.toLowerCase()} finish ${artMap[design.art]} ${accMap[design.accessory]}. Studio lighting, white background, luxury manicure, hyper-realistic, 4k, editorial fashion.`.replace(/\s+/g, ' ');
+  const artMap: Record<string, string> = { none: '', minimal: 'minimalist line art', marble: 'marble effect', floral: 'hand-painted flowers', french: 'modern french tip' };
+  const accMap: Record<string, string> = { none: '', pearls: 'micro pearls', crystals: 'Swarovski crystals', 'gold-flakes': 'gold leaf' };
+  const shape = shapeMap[design.shape] || 'almond';
+  const color = colorMap[design.color] || design.color;
+  const art = artMap[design.art] || '';
+  const acc = accMap[design.accessory] || '';
+  return `${shape} nails, ${color} color, ${design.effect.toLowerCase()} finish ${art} ${acc}, luxury manicure, studio lighting, white background, photorealistic`.trim();
 }
 
 export async function generateNailImage(design: {
   shape: string; color: string; effect: string; art: string; accessory: string;
 }): Promise<string | null> {
   const prompt = buildPrompt(design);
-
-  try {
-    const res = await fetch('/api/generate-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
-    });
-
-    if (!res.ok) return null;
-
-    const blob = await res.blob();
-    return URL.createObjectURL(blob);
-  } catch (err) {
-    console.error('Image generation error:', err);
-    return null;
-  }
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=800&nologo=true`;
 }

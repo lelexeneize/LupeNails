@@ -78,6 +78,7 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiResult, setAiResult] = useState<{ name: string, description: string } | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [design, setDesign] = useState({
     shape: 'almond',
     color: 'rose-glaze',
@@ -92,6 +93,7 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
     setIsGenerating(true);
     setStep(5);
     setGeneratedImage(null);
+    setImageError(false);
     
     try {
       const result = await geminiService.generateNailStudioResult(design);
@@ -179,9 +181,10 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                   transition={{ duration: 1, type: 'spring' }}
                   className="relative group"
                 >
-                  {generatedImage ? (
+                  {generatedImage && !imageError ? (
                     <img 
                       src={generatedImage} 
+                      onError={() => setImageError(true)}
                       className="w-72 h-[450px] object-cover rounded-[3rem] shadow-2xl skew-y-2 group-hover:skew-y-0 transition-transform duration-700" 
                       alt="AI generated nail design"
                     />
