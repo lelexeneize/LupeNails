@@ -24,7 +24,7 @@ export const geminiService = {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         contents: prompt
       });
       
@@ -37,7 +37,23 @@ export const geminiService = {
     }
   },
 
+  generateFallbackResult(design: { shape: string, color: string, effect: string, art: string, accessory: string }) {
+    const styleNames = [
+      'Chrome Pearl Glaze', 'Soft Vanilla Cloud', 'Rose Gold Aura', 'Milky Lavender Dream',
+      'Golden Hour Shimmer', 'Crystal Nude Elegance', 'Pink Sand Dune', 'Midnight Chrome Luxe',
+      'French Couture Gloss', 'Clean Girl Pearl', 'Holographic Halo', 'Satin Blush Finish',
+      'Glazed Donut Chic', 'Mermaid Scale Chrome', 'Opal Dreamscape'
+    ];
+    const name = styleNames[Math.floor(Math.random() * styleNames.length)];
+    const desc = `Diseño en forma ${design.shape} con ${design.effect === 'Brillante' ? 'brillo ultra premium' : design.effect === 'Mate' ? 'acabado mate sedoso' : design.effect === 'Chrome' ? 'efecto chrome espejado' : design.effect === 'Glazed' ? 'acabado glazed donut' : 'destellos glitter'}${design.art !== 'none' ? ` y arte ${ART_NAMES[design.art as keyof typeof ART_NAMES] || 'personalizado'}` : ''}${design.accessory !== 'none' ? ` con ${ACCESSORY_NAMES[design.accessory as keyof typeof ACCESSORY_NAMES] || 'accesorios'}` : ''}. Un estilo que grita elegancia y tendencia.`;
+    return { name, description: desc };
+  },
+
   async generateNailStudioResult(design: { shape: string, color: string, effect: string, art: string, accessory: string }) {
+    if (!process.env.GEMINI_API_KEY) {
+      return this.generateFallbackResult(design);
+    }
+
     const prompt = `
       Actúa como una estilista de uñas de lujo en "Lupe Nails Studio".
       La clienta ha diseñado:
@@ -59,11 +75,27 @@ export const geminiService = {
       });
       
       const text = response.text;
-      if (!text) return null;
-      return JSON.parse(text.replace(/```json|```/g, ""));
+      if (!text) return this.generateFallbackResult(design);
+      const parsed = JSON.parse(text.replace(/```json|```/g, ""));
+      return parsed;
     } catch (error) {
       console.error("Gemini Studio error:", error);
-      return { name: "Custom Lupe Style", description: "Un diseño único creado especialmente para potenciar tu estilo personal." };
+      return this.generateFallbackResult(design);
     }
   }
+}
+
+const ART_NAMES = {
+  'none': 'sin arte',
+  'minimal': 'diseño minimalista',
+  'marble': 'efecto mármol',
+  'floral': 'flores manuales',
+  'french': 'francesa moderna'
+};
+
+const ACCESSORY_NAMES = {
+  'none': 'sin accesorios',
+  'pearls': 'micro perlas',
+  'crystals': 'cristales Swarovski',
+  'gold-flakes': 'hojas de oro'
 };

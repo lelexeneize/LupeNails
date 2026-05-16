@@ -2,10 +2,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Home, Grid, Calendar, Settings, Heart, MessageCircle, User as UserIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext.tsx';
+import { LoginModal } from '../LoginModal';
 
-export const Header = ({ onDashboardClick }: { onDashboardClick: () => void }) => {
+export const Header = ({ onDashboardClick, onBookingClick }: { onDashboardClick: () => void, onBookingClick: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, login } = useAuth();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -14,6 +16,8 @@ export const Header = ({ onDashboardClick }: { onDashboardClick: () => void }) =
   }, []);
 
   return (
+    <>
+    <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 py-4 ${
         isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-sm' : 'bg-transparent'
@@ -47,23 +51,25 @@ export const Header = ({ onDashboardClick }: { onDashboardClick: () => void }) =
             </button>
           ) : (
             <button 
-              onClick={login}
+              onClick={() => setIsLoginOpen(true)}
               className="hidden md:flex items-center gap-2 h-10 px-6 border border-brand-dark/10 rounded-full text-[10px] font-accent uppercase tracking-widest hover:bg-brand-dark hover:text-white transition-all"
             >
-              <UserIcon className="w-3 h-3" /> Log In
+              <UserIcon className="w-3 h-3" /> Ingresar
             </button>
           )}
-          <button className="hidden md:block bg-brand-dark text-brand-nude px-6 py-2 rounded-full text-xs font-accent uppercase tracking-widest hover:bg-brand-gold transition-all duration-500">
+          <button onClick={onBookingClick} className="hidden md:block bg-brand-dark text-brand-nude px-6 py-2 rounded-full text-xs font-accent uppercase tracking-widest hover:bg-brand-gold transition-all duration-500">
             Reservar Turno
           </button>
         </div>
       </div>
     </header>
+  </>
   );
 };
 
 export const BottomNav = ({ onDashboardClick }: { onDashboardClick: () => void }) => {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   
   return (
     <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden w-[90%] max-w-sm">
@@ -85,11 +91,12 @@ export const BottomNav = ({ onDashboardClick }: { onDashboardClick: () => void }
             <UserIcon className="w-5 h-5" />
           </button>
         ) : (
-          <button onClick={login} className="p-2 text-brand-dark/40">
+          <button onClick={() => setIsLoginOpen(true)} className="p-2 text-brand-dark/40">
             <Settings className="w-5 h-5" />
           </button>
         )}
       </div>
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </nav>
   );
 };

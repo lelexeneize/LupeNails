@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Calendar, Heart, User, LogOut, ChevronRight, Clock, MapPin, Tag, Sparkles } from 'lucide-react';
+import { Calendar, Heart, User, LogOut, ChevronRight, Clock, MapPin, Tag, Sparkles, Copy, Check } from 'lucide-react';
 import { useAuth } from '../../services/authContext';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit, getDocs as getDocsAll } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 
 export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const { user, logout } = useAuth();
   const [bookings, setBookings] = useState<any[]>([]);
   const [designs, setDesigns] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState('');
 
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
       try {
-        // Bookings
         const bq = query(
           collection(db, 'bookings'),
           where('userId', '==', user.uid),
@@ -26,7 +27,6 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
         const bSnapshot = await getDocs(bq);
         setBookings(bSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-        // Designs
         const dq = query(
           collection(db, 'designs'),
           where('creatorId', '==', user.uid),
@@ -35,6 +35,9 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
         );
         const dSnapshot = await getDocs(dq);
         setDesigns(dSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const cSnapshot = await getDocsAll(collection(db, 'coupons'));
+        setCoupons(cSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -44,6 +47,12 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
 
     fetchData();
   }, [user]);
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(''), 2000);
+  };
 
   if (!isOpen) return null;
 
@@ -63,7 +72,6 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
 
         <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="p-12 md:p-16">
-            {/* Header */}
             <div className="flex flex-col md:flex-row items-center gap-8 mb-16">
               <div className="relative">
                 <img 
@@ -87,7 +95,6 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {/* Recent Bookings */}
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl italic font-display">Mis Turnos</h3>
@@ -105,7 +112,7 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
                             <Calendar className="w-5 h-5 text-brand-rose" />
                           </div>
                           <div>
-                            <div className="font-bold text-sm tracking-wide uppercase">{booking.service}</div>
+                            <div className="font-bold text-sm tracking-wide uppercase">{booking.service || 'Consulta'}</div>
                             <div className="text-xs text-stone-400">{booking.date} • {booking.time}</div>
                           </div>
                         </div>
@@ -119,14 +126,13 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
                   ) : (
                     <div className="p-12 text-center bg-white rounded-3xl border border-brand-border/10">
                       <Calendar className="w-10 h-10 text-stone-200 mx-auto mb-4" />
-                      <p className="text-stone-400 text-sm">No tienes turnos programados.</p>
+                      <p className="text-stone-400 text-sm">No tenés turnos programados.</p>
                       <button className="mt-4 text-[10px] uppercase tracking-widest font-bold text-brand-gold">Reservar ahora</button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Favorites & Discounts */}
               <div className="space-y-12">
                 <div>
                   <h3 className="text-2xl italic font-display mb-8">Mis Diseños</h3>
@@ -149,7 +155,7 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
                     ) : (
                       <div className="col-span-2 aspect-[2/1] bg-stone-100 rounded-3xl border-2 border-dashed border-stone-200 flex flex-col items-center justify-center p-8 text-center">
                         <Heart className="w-6 h-6 text-stone-200 mb-2" />
-                        <p className="text-[10px] uppercase tracking-widest text-stone-400">No has guardado diseños aún</p>
+                        <p className="text-[10px] uppercase tracking-widest text-stone-400">No guardaste diseños aún</p>
                       </div>
                     )}
                   </div>
@@ -157,21 +163,62 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
 
                 <div>
                   <h3 className="text-2xl italic font-display mb-8">Cupones & Regalos</h3>
-                  <div className="p-6 bg-brand-dark rounded-3xl text-white relative overflow-hidden">
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-brand-gold/20 blur-3xl rounded-full" />
-                    <div className="flex gap-4 items-center mb-4">
-                      <Tag className="w-5 h-5 text-brand-gold" />
-                      <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Promo Bienvenida</span>
+                  {loading ? (
+                    <div className="p-6 bg-stone-100 rounded-3xl animate-pulse h-32" />
+                  ) : coupons.length > 0 ? (
+                    <div className="space-y-4">
+                      {coupons.map(coupon => (
+                        <div key={`coupon-${coupon.id}`} className="p-6 bg-brand-dark rounded-3xl text-white relative overflow-hidden">
+                          <div className="absolute -right-8 -top-8 w-32 h-32 bg-brand-gold/20 blur-3xl rounded-full" />
+                          <div className="flex gap-4 items-center mb-4">
+                            <Tag className="w-5 h-5 text-brand-gold" />
+                            <span className="text-[10px] uppercase tracking-[0.2em] font-bold">
+                              {coupon.type === 'percentage' ? `${coupon.discount}% OFF` : `$${coupon.discount} OFF`}
+                            </span>
+                          </div>
+                          <p className="text-white/40 text-[10px] uppercase tracking-widest mb-4">
+                            {coupon.code === 'BIENVENIDA20' ? 'Promo Bienvenida' : 'Cupón disponible'}
+                          </p>
+                          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                            <code className="text-brand-gold font-mono tracking-widest font-bold text-lg">{coupon.code}</code>
+                            <button
+                              onClick={() => handleCopyCode(coupon.code)}
+                              className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
+                            >
+                              {copiedCode === coupon.code ? (
+                                <Check className="w-4 h-4 text-green-400" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-3xl font-display mb-2">20% OFF</div>
-                    <p className="text-white/40 text-[10px] uppercase tracking-widest mb-6">Válido para tu próximo turno</p>
-                    <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                      <code className="text-brand-gold font-mono tracking-widest font-bold text-lg">LUPE20</code>
-                      <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                  ) : (
+                    <div className="p-6 bg-brand-dark rounded-3xl text-white relative overflow-hidden">
+                      <div className="absolute -right-8 -top-8 w-32 h-32 bg-brand-gold/20 blur-3xl rounded-full" />
+                      <div className="flex gap-4 items-center mb-4">
+                        <Tag className="w-5 h-5 text-brand-gold" />
+                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Promo Bienvenida</span>
+                      </div>
+                      <div className="text-3xl font-display mb-2">20% OFF</div>
+                      <p className="text-white/40 text-[10px] uppercase tracking-widest mb-6">Válido para tu primer turno</p>
+                      <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                        <code className="text-brand-gold font-mono tracking-widest font-bold text-lg">LUPE20</code>
+                        <button
+                          onClick={() => handleCopyCode('LUPE20')}
+                          className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
+                        >
+                          {copiedCode === 'LUPE20' ? (
+                            <Check className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

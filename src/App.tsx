@@ -48,7 +48,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen selection:bg-brand-gold/20 scroll-smooth">
-      <Header onDashboardClick={() => setIsDashboardOpen(true)} />
+      <Header onDashboardClick={() => setIsDashboardOpen(true)} onBookingClick={() => setIsBookingOpen(true)} />
       
       <main>
         <Hero onBookingClick={() => setIsBookingOpen(true)} />
