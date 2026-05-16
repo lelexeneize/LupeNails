@@ -24,20 +24,41 @@ export const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
       }
       onClose();
     } catch (err: any) {
-      const msg = err?.code?.replace('auth/', '') || 'Error al iniciar sesión';
-      setError(msg === 'invalid-credential' ? 'Email o contraseña incorrectos' : msg === 'email-already-in-use' ? 'Ya hay una cuenta con ese email' : msg === 'weak-password' ? 'La contraseña debe tener al menos 6 caracteres' : 'Error, intentá de nuevo');
+      const code = err?.code?.replace('auth/', '') || '';
+      const messages: Record<string, string> = {
+        'invalid-credential': 'Email o contraseña incorrectos',
+        'email-already-in-use': 'Ya hay una cuenta con ese email',
+        'weak-password': 'La contraseña debe tener al menos 6 caracteres',
+        'user-not-found': 'No hay cuenta con ese email',
+        'wrong-password': 'Contraseña incorrecta',
+        'too-many-requests': 'Demasiados intentos. Esperá un momento',
+      };
+      setError(messages[code] || 'Error, intentá de nuevo');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError('');
     try {
       await login();
       onClose();
-    } catch {
-      setError('Error al iniciar con Google');
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/unauthorized-domain' || code === 'auth/operation-not-allowed') {
+        setError('El inicio con Google no está habilitado para este dominio. Mientras, podés registrarte con email y contraseña.');
+      } else if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+        setError('El popup fue bloqueado. Permití popups para este sitio o usá email y contraseña.');
+      } else {
+        setError('Error al iniciar con Google. Probá con email y contraseña.');
+      }
     }
+  };
+
+  const switchMode = (newMode: 'login' | 'register') => {
+    setMode(newMode);
+    setError('');
   };
 
   if (!isOpen) return null;
@@ -53,39 +74,54 @@ export const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         <motion.div
           initial={{ scale: 0.95, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          className="bg-brand-nude w-full max-w-md rounded-[3rem] p-12 shadow-2xl relative"
+          className="bg-brand-nude w-full max-w-md rounded-[3rem] p-10 shadow-2xl relative"
         >
           <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
 
-          <div className="text-center mb-10">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-brand-dark rounded-2xl">
-                <Sparkles className="w-8 h-8 text-brand-gold" />
-              </div>
-            </div>
-            <h2 className="text-3xl italic font-display mb-2">
+          {/* Tabs */}
+          <div className="flex bg-white rounded-2xl p-1.5 mb-8 border border-brand-dark/5">
+            <button
+              onClick={() => switchMode('login')}
+              className={`flex-1 py-3 rounded-xl text-xs font-accent uppercase tracking-widest font-bold transition-all ${
+                mode === 'login' ? 'bg-brand-dark text-white shadow-sm' : 'text-brand-dark/40 hover:text-brand-dark'
+              }`}
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              onClick={() => switchMode('register')}
+              className={`flex-1 py-3 rounded-xl text-xs font-accent uppercase tracking-widest font-bold transition-all ${
+                mode === 'register' ? 'bg-brand-dark text-white shadow-sm' : 'text-brand-dark/40 hover:text-brand-dark'
+              }`}
+            >
+              Registrarse
+            </button>
+          </div>
+
+          <div className="text-center mb-8">
+            <h2 className="text-2xl italic font-display mb-1">
               {mode === 'login' ? 'Bienvenida de vuelta' : 'Creá tu cuenta'}
             </h2>
-            <p className="text-xs font-accent text-brand-dark/40 uppercase tracking-widest">
+            <p className="text-[11px] font-accent text-brand-dark/40 uppercase tracking-widest">
               {mode === 'login' ? 'Iniciá sesión en Lupe Nails' : 'Unite al mundo Lupe Nails'}
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-xs text-red-600 font-accent text-center">
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-xs text-red-600 font-accent text-center leading-relaxed">
               {error}
             </div>
           )}
 
           <button
             onClick={handleGoogleLogin}
-            className="w-full p-4 rounded-2xl border border-brand-dark/10 bg-white flex items-center justify-center gap-3 hover:border-brand-gold transition-all mb-6"
+            className="w-full p-4 rounded-2xl border border-brand-dark/10 bg-white flex items-center justify-center gap-3 hover:border-brand-gold transition-all mb-6 group"
           >
             <GoogleIcon className="w-5 h-5" />
-            <span className="text-xs font-accent font-bold tracking-widest uppercase">
-              {mode === 'login' ? 'Iniciar con Google' : 'Registrarse con Google'}
+            <span className="text-xs font-accent font-bold tracking-widest uppercase group-hover:text-brand-dark">
+              {mode === 'login' ? 'Google' : 'Google'}
             </span>
           </button>
 
@@ -95,7 +131,7 @@ export const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
             <div className="flex-1 h-px bg-brand-dark/10" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {mode === 'register' && (
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-dark/30" />
@@ -124,7 +160,7 @@ export const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-dark/30" />
               <input
                 type="password"
-                placeholder="Contraseña"
+                placeholder="Contraseña (mín. 6 caracteres)"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -136,20 +172,11 @@ export const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full premium-button bg-brand-dark text-brand-nude disabled:opacity-40"
+              className="w-full premium-button bg-brand-dark text-brand-nude disabled:opacity-40 mt-2"
             >
-              {isSubmitting ? 'Un momento...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+              {isSubmitting ? 'Un momento...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta Gratis'}
             </button>
           </form>
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
-              className="text-[11px] font-accent uppercase tracking-widest text-brand-dark/40 hover:text-brand-gold transition-colors"
-            >
-              {mode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión'}
-            </button>
-          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
