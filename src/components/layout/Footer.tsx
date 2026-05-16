@@ -33,7 +33,8 @@ export const Footer = ({ onAdminClick }: { onAdminClick: () => void }) => {
         setShowSetup(false);
         refreshAdminStatus();
       }, 1500);
-    } catch {
+    } catch (err) {
+      console.error('Error activando admin:', err);
       setSetupState('error');
     }
   };
