@@ -1,0 +1,14 @@
+{
+  "name": "Lupe Nails Studio",
+  "description": "Premium nail salon experience by Lupe. Viral designs, AI-powered inspiration, and luxury nail care in a Pinterest-ready aesthetic.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "AI-powered design recommendations",
+    "Real-time booking system",
+    "Pinterest-style discovery gallery",
+    "Virtual Nail Generator"
+  ]
+}

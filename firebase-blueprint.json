@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Client or Admin user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["client", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Booking": {
+      "title": "Appointment",
+      "description": "A scheduled nail service",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "clientName": { "type": "string" },
+        "professional": { "type": "string" },
+        "service": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled", "completed"] },
+        "price": { "type": "number" },
+        "couponCode": { "type": "string" },
+        "discountApplied": { "type": "number" },
+        "finalPrice": { "type": "number" },
+        "designId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "service", "date", "time", "status"]
+    },
+    "Design": {
+      "title": "Nail Design",
+      "description": "A gallery or custom nail design",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "isPublic": { "type": "boolean" },
+        "creatorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["imageUrl", "isPublic"]
+    },
+    "Coupon": {
+      "title": "Discount Coupon",
+      "description": "Promotion codes for bookings",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "discount": { "type": "number" },
+        "type": { "type": "string", "enum": ["percentage", "fixed"] },
+        "expiryDate": { "type": "string", "format": "date-time" },
+        "usageLimit": { "type": "number" },
+        "usedCount": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["code", "discount", "type", "isActive"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "bookings": {
+      "schema": "Booking",
+      "description": "Appointment records"
+    },
+    "designs": {
+      "schema": "Design",
+      "description": "Gallery of nail designs"
+    },
+    "coupons": {
+      "schema": "Coupon",
+      "description": "Discount codes"
+    },
+    "admins": {
+      "schema": { "type": "object", "properties": { "uid": { "type": "string" } } },
+      "description": "Whitelisted admin UIDs"
+    }
+  }
+}

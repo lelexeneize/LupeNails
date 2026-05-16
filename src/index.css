@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", serif;
+  --font-accent: "Outfit", sans-serif;
+
+  --color-brand-nude: #FDFBF7;
+  --color-brand-rose: #F4B5B5;
+  --color-brand-gold: #D4AF37;
+  --color-brand-champagne: #F7E7CE;
+  --color-brand-dark: #1A1A1A;
+  --color-brand-border: #E8D5C4;
+  
+  --radius-premium: 1.5rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-brand-nude text-brand-dark selection:bg-brand-rose/30;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tighter;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/50 backdrop-blur-md border border-brand-border/20 shadow-sm;
+  }
+  
+  .premium-button {
+    @apply px-8 py-4 rounded-full font-accent font-medium transition-all duration-500 active:scale-95;
+  }
+  
+  .masonry-grid {
+    column-count: 2;
+    column-gap: 1rem;
+  }
+  
+  @screen md {
+    .masonry-grid {
+      column-count: 3;
+    }
+  }
+  
+  @screen lg {
+    .masonry-grid {
+      column-count: 4;
+    }
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-rose/50 rounded-full;
+}
