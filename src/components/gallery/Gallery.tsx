@@ -7,14 +7,14 @@ const CATEGORIES = [
 ];
 
 const DESIGNS = [
-  { id: 1, title: 'Pearl Chrome', category: 'Chrome', image: 'https://images.unsplash.com/photo-1604243708230-058f96791986?auto=format&fit=crop&q=80&w=600', height: 'aspect-[3/4]' },
-  { id: 2, title: 'Minimalist Line', category: 'Minimalist', image: 'https://images.unsplash.com/photo-1632345031435-07279313eaec?auto=format&fit=crop&q=80&w=600', height: 'aspect-[1/1]' },
+  { id: 1, title: 'Pearl Chrome', category: 'Chrome', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600', height: 'aspect-[3/4]' },
+  { id: 2, title: 'Minimalist Line', category: 'Minimalist', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600', height: 'aspect-[1/1]' },
   { id: 3, title: 'Glazed Donut', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600', height: 'aspect-[2/3]' },
   { id: 4, title: 'Aura Gradient', category: 'Aura', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600', height: 'aspect-[4/5]' },
-  { id: 5, title: 'Classic French', category: 'French', image: 'https://images.unsplash.com/photo-1522337660859-026857ea2453?auto=format&fit=crop&q=80&w=600', height: 'aspect-[3/4]' },
+  { id: 5, title: 'Classic French', category: 'French', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600', height: 'aspect-[3/4]' },
   { id: 6, title: 'Gold Flakes', category: 'Luxury', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600', height: 'aspect-[1/1]' },
-  { id: 7, title: '3D Chrome', category: '3D Art', image: 'https://images.unsplash.com/photo-1610651165403-1498e916329c?auto=format&fit=crop&q=80&w=600', height: 'aspect-[2/3]' },
-  { id: 8, title: 'Nude Velvet', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1599426417051-83d5a-52f75010?auto=format&fit=crop&q=80&w=600', height: 'aspect-[4/5]' },
+  { id: 7, title: '3D Chrome', category: '3D Art', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600', height: 'aspect-[2/3]' },
+  { id: 8, title: 'Nude Velvet', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600', height: 'aspect-[4/5]' },
 ];
 
 export const Gallery = () => {

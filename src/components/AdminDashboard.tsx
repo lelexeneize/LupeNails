@@ -72,7 +72,7 @@ export const AdminDashboard = () => {
               <div className="grid grid-cols-4 gap-4">
                 {[1, 2, 3, 4, 5, 6, 7].map(i => (
                   <div key={`gallery-item-${i}`} className="aspect-square bg-white/50 rounded-xl overflow-hidden relative group">
-                    <img src={`https://images.unsplash.com/photo-1604243708230-058f96791986?auto=format&fit=crop&q=80&w=150&sig=${i}`} className="w-full h-full object-cover" alt="design" />
+                    <img src={`https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=150&sig=${i}`} className="w-full h-full object-cover" alt="design" />
                     <div className="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Edit3 className="w-4 h-4 text-white" />
                     </div>

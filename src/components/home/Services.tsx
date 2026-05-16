@@ -32,7 +32,7 @@ const services = [
     duration: '45 min',
     price: '$25',
     description: 'Color impecable que dura hasta 3 semanas.',
-    image: 'https://images.unsplash.com/photo-1522337660859-026857ea2453?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600'
   }
 ];
 

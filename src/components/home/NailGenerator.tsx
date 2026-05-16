@@ -7,8 +7,8 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
 const SHAPES = [
-  { id: 'almond', name: 'Almendra', image: 'https://images.unsplash.com/photo-1604243708230-058f96791986?q=80&w=300' },
-  { id: 'coffin', name: 'Coffin', image: 'https://images.unsplash.com/photo-1632345031435-08207908c6ba?q=80&w=300' },
+  { id: 'almond', name: 'Almendra', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=300' },
+  { id: 'coffin', name: 'Coffin', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=300' },
   { id: 'stiletto', name: 'Stiletto', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=300' },
   { id: 'square', name: 'Cuadrada', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=300' },
 ];
@@ -108,9 +108,9 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
     if (!user) return alert('Debes iniciar sesión para guardar tu diseño');
     try {
       // Use different placeholders based on design
-      let imageUrl = 'https://images.unsplash.com/photo-1604243708230-058f96791986?q=80&w=600&auto=format&fit=crop';
-      if (design.art !== 'none') imageUrl = 'https://images.unsplash.com/photo-1627289901140-025586676fd3?q=80&w=600';
-      if (design.effect === 'Chrome') imageUrl = 'https://images.unsplash.com/photo-1610651165403-1498e916329c?q=80&w=600';
+      let imageUrl = 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600&auto=format&fit=crop';
+      if (design.art !== 'none') imageUrl = 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600';
+      if (design.effect === 'Chrome') imageUrl = 'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600';
 
       await addDoc(collection(db, 'designs'), {
         ...design,
@@ -178,7 +178,7 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                   className="relative group"
                 >
                   <img 
-                    src={`https://images.unsplash.com/photo-1604243708230-058f96791986?q=80&w=600&auto=format&fit=crop`} 
+                    src={`https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600&auto=format&fit=crop`} 
                     className="w-72 h-[450px] object-cover rounded-[3rem] shadow-2xl skew-y-2 group-hover:skew-y-0 transition-transform duration-700" 
                     alt="Final result"
                   />

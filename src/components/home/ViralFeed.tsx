@@ -2,10 +2,10 @@ import { motion } from 'motion/react';
 import { Instagram, Smartphone, Heart, MessageCircle } from 'lucide-react';
 
 const REELS = [
-  { id: 1, video: 'https://images.unsplash.com/photo-1604243708230-058f96791986?auto=format&fit=crop&q=80&w=600', views: '125K' },
+  { id: 1, video: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600', views: '125K' },
   { id: 2, video: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600', views: '89K' },
   { id: 3, video: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600', views: '210K' },
-  { id: 4, video: 'https://images.unsplash.com/photo-1632345031435-07279313eaec?auto=format&fit=crop&q=80&w=600', views: '67K' },
+  { id: 4, video: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600', views: '67K' },
 ];
 
 export const ViralFeed = () => {

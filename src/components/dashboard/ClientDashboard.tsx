@@ -143,7 +143,7 @@ export const ClientDashboard = ({ isOpen, onClose }: { isOpen: boolean, onClose:
                       designs.map(design => (
                         <div key={`design-item-${design.id}`} className="aspect-square bg-white rounded-3xl overflow-hidden relative group cursor-pointer shadow-sm border border-brand-border/10">
                           <img 
-                            src={design.imageUrl || "https://images.unsplash.com/photo-1627289901140-025586676fd3?q=80&w=200"} 
+                            src={design.imageUrl || "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=200"} 
                             className="w-full h-full object-cover transition-transform group-hover:scale-110" 
                             alt={design.name} 
                           />

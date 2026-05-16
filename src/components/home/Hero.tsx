@@ -62,7 +62,7 @@ export const Hero = ({ onBookingClick }: { onBookingClick: () => void }) => {
           className="relative aspect-square md:aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl"
         >
           <img 
-            src="https://images.unsplash.com/photo-1632345031435-07279313eaec?auto=format&fit=crop&q=80&w=1200" 
+            src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=1200" 
             alt="Premium Nail Art" 
             className="w-full h-full object-cover"
           />
