@@ -35,10 +35,13 @@ export function generateNailCanvas(design: {
 }): Promise<string | null> {
   return new Promise((resolve) => {
     try {
+      const dpr = window.devicePixelRatio || 1;
       const canvas = document.createElement('canvas');
-      canvas.width = 600;
-      canvas.height = 800;
+      canvas.width = 600 * dpr;
+      canvas.height = 800 * dpr;
       const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve(null);
+      ctx.scale(dpr, dpr);
       if (!ctx) return resolve(null);
 
       const COLORS: Record<string, string> = {
