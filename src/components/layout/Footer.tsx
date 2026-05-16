@@ -9,6 +9,7 @@ export const Footer = ({ onAdminClick }: { onAdminClick: () => void }) => {
   const { user, isAdmin, refreshAdminStatus } = useAuth();
   const [showSetup, setShowSetup] = useState(false);
   const [setupState, setSetupState] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
 
   const handleAdminClick = () => {
@@ -33,9 +34,10 @@ export const Footer = ({ onAdminClick }: { onAdminClick: () => void }) => {
         setShowSetup(false);
         refreshAdminStatus();
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error activando admin:', err);
       setSetupState('error');
+      setErrorMsg(err?.code || err?.message || 'Error desconocido');
     }
   };
 
@@ -117,7 +119,8 @@ export const Footer = ({ onAdminClick }: { onAdminClick: () => void }) => {
 
               {setupState === 'error' && (
                 <div className="text-center py-8">
-                  <p className="text-sm text-red-500 mb-4">Error al activar. ¿Querés probar de nuevo o hacerlo manual?</p>
+                  <p className="text-sm text-red-500 mb-2">Error al activar</p>
+                  <p className="text-[10px] font-mono text-red-400 mb-4 break-all">{errorMsg}</p>
                   <button onClick={handleSetupAdmin} className="premium-button bg-brand-dark text-brand-nude mb-3 w-full">Reintentar</button>
                   <button onClick={() => { setCopied(false); navigator.clipboard.writeText(user?.uid || ''); setCopied(true); }} className="text-xs font-accent underline text-brand-dark/40">Copiar mi ID</button>
                 </div>
