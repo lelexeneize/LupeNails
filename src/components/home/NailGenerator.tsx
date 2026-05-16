@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, Check, ChevronRight, X, Play, Palette, Layout, MousePointer2, Loader2, Heart, Calendar, Share2, Download } from 'lucide-react';
 import { geminiService } from '../../services/geminiService';
+import { generateNailImage } from '../../services/imageGenerationService';
 import { useAuth } from '../../services/authContext';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -76,6 +77,7 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiResult, setAiResult] = useState<{ name: string, description: string } | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [design, setDesign] = useState({
     shape: 'almond',
     color: 'rose-glaze',
@@ -89,16 +91,16 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
   const handleGenerate = async () => {
     setIsGenerating(true);
     setStep(5);
+    setGeneratedImage(null);
     
     try {
       const result = await geminiService.generateNailStudioResult(design);
       setAiResult(result);
-      setTimeout(() => {
-        setIsGenerating(false);
-        setStep(6);
-      }, 2500);
+      const img = await generateNailImage(design);
+      if (img) setGeneratedImage(img);
     } catch (error) {
       console.error(error);
+    } finally {
       setIsGenerating(false);
       setStep(6);
     }
@@ -177,11 +179,30 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                   transition={{ duration: 1, type: 'spring' }}
                   className="relative group"
                 >
-                  <img 
-                    src={`https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600&auto=format&fit=crop`} 
-                    className="w-72 h-[450px] object-cover rounded-[3rem] shadow-2xl skew-y-2 group-hover:skew-y-0 transition-transform duration-700" 
-                    alt="Final result"
-                  />
+                  {generatedImage ? (
+                    <img 
+                      src={generatedImage} 
+                      className="w-72 h-[450px] object-cover rounded-[3rem] shadow-2xl skew-y-2 group-hover:skew-y-0 transition-transform duration-700" 
+                      alt="AI generated nail design"
+                    />
+                  ) : (
+                    <div className="w-72 h-[450px] flex flex-col items-center justify-center rounded-[3rem] shadow-2xl border border-brand-dark/5 bg-brand-nude">
+                      <div className="w-32 h-64 rounded-t-full rounded-b-xl border-4 border-brand-nude shadow-2xl overflow-hidden"
+                        style={{ 
+                          backgroundColor: COLORS.find(c => c.id === design.color)?.hex || '#FFFFFF',
+                          borderRadius: design.shape === 'stiletto' ? '200px 200px 40px 40px' : '80px 80px 40px 40px',
+                        }}
+                      >
+                        {design.effect === 'Chrome' && (
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/50 to-transparent animate-shimmer" />
+                        )}
+                        {design.effect === 'Glazed' && (
+                          <div className="absolute inset-0 opacity-40 bg-gradient-to-b from-white via-transparent to-white/20" />
+                        )}
+                      </div>
+                      <p className="text-[10px] font-accent text-brand-dark/30 mt-6">Preview sin IA</p>
+                    </div>
+                  )}
                   <div className="absolute inset-0 rounded-[3rem] ring-1 ring-inset ring-white/20" />
                   <div className="absolute -right-8 bottom-12">
                     <div className="bg-brand-dark text-white p-6 rounded-3xl shadow-xl max-w-[200px]">
