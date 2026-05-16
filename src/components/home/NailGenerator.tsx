@@ -185,8 +185,8 @@ export const NailGenerator = ({ isOpen, onClose, onFinish }: { isOpen: boolean, 
                     <img 
                       src={generatedImage} 
                       onError={() => setImageError(true)}
-                      className="w-full max-w-[280px] md:max-w-sm h-auto aspect-[3/4] object-contain rounded-[3rem] shadow-2xl transition-transform duration-700" 
-                      alt="AI generated nail design"
+                      className="w-full max-w-[280px] md:max-w-sm h-auto aspect-[3/4] object-cover rounded-[3rem] shadow-2xl transition-transform duration-700" 
+                      alt="Nail design inspiration"
                     />
                   ) : (
                     <div className="w-72 h-[450px] flex flex-col items-center justify-center rounded-[3rem] shadow-2xl border border-brand-dark/5 bg-brand-nude">
