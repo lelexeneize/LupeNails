@@ -1,66 +1,47 @@
-const PHOTOS: Record<string, string[]> = {
-  almond: [
-    'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600',
-    'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600',
-    'https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600',
-    'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=600',
-    'https://images.unsplash.com/photo-1610992015732-2449b76344bc?q=80&w=600',
-  ],
-  coffin: [
-    'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600',
-    'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600',
-    'https://images.unsplash.com/photo-1567721913486-6585f069b332?q=80&w=600',
-    'https://images.unsplash.com/photo-1632345031435-8727f6897d53?q=80&w=600',
-  ],
-  stiletto: [
-    'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600',
-    'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600',
-    'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=600',
-    'https://images.unsplash.com/photo-1632345031435-8727f6897d53?q=80&w=600',
-  ],
-  square: [
-    'https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600',
-    'https://images.unsplash.com/photo-1567721913486-6585f069b332?q=80&w=600',
-    'https://images.unsplash.com/photo-1610992015732-2449b76344bc?q=80&w=600',
-    'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600',
-  ],
-};
-
-const CHROME = 'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=600';
-const PINK = 'https://images.unsplash.com/photo-1610992015732-2449b76344bc?q=80&w=600';
-const RED = 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600';
-const NUDE = 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600';
-const ART = 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600';
-const DARK = 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?q=80&w=600';
-const GLITTER = 'https://images.unsplash.com/photo-1567721913486-6585f069b332?q=80&w=600';
-const GENERAL = 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=600';
-
-const COLOR_MAP: Record<string, string> = {
-  'nude-silk': NUDE, 'milky-white': NUDE, latte: NUDE, 'sand-dune': NUDE, vanilla: NUDE,
-  'rose-glaze': PINK, 'peachy-pink': PINK, bubblegum: PINK, 'hot-pink': PINK, mauve: PINK,
-  'classic-red': RED, 'velvet-ruby': RED, 'wine-cellar': RED, crimson: RED, coral: RED,
-  onyx: DARK, 'deep-espresso': DARK, charcoal: DARK, plum: DARK,
-  'midnight-blue': DARK, 'sage-green': DARK, emerald: DARK,
-  'neon-lime': DARK, 'electric-blue': DARK, 'sun-yellow': PINK,
-};
-
-export function generateNailImage(design: {
+function buildPrompt(design: {
   shape: string; color: string; effect: string; art: string; accessory: string;
-}): Promise<string | null> {
-  const seed = hashDesign(design);
-  const shape = design.shape || 'almond';
-  const photos = PHOTOS[shape] || PHOTOS.almond;
-  const colorMatch = COLOR_MAP[design.color];
-  const effectMatch = design.effect === 'Chrome' ? CHROME : design.effect === 'Glitter' ? GLITTER : null;
-  const artMatch = design.art !== 'none' ? ART : null;
-
-  const pick = colorMatch || effectMatch || artMatch || photos[seed % photos.length] || GENERAL;
-  return Promise.resolve(pick);
+}): string {
+  const shapeMap: Record<string, string> = { almond: 'almond', coffin: 'coffin', stiletto: 'stiletto', square: 'square' };
+  const colorMap: Record<string, string> = {
+    'nude-silk': 'nude silk', 'milky-white': 'milky white', latte: 'latte', 'sand-dune': 'sand dune', vanilla: 'vanilla',
+    'rose-glaze': 'rose glaze', 'peachy-pink': 'peachy pink', bubblegum: 'bubblegum', 'hot-pink': 'hot pink', mauve: 'mauve',
+    'classic-red': 'classic red', 'velvet-ruby': 'velvet ruby', 'wine-cellar': 'deep wine',
+    crimson: 'crimson', coral: 'coral', 'midnight-blue': 'midnight blue', 'sage-green': 'sage green',
+    'sky-high': 'sky blue', emerald: 'emerald', lavender: 'lavender',
+    onyx: 'onyx black', 'deep-espresso': 'deep espresso', charcoal: 'charcoal', plum: 'plum',
+    'neon-lime': 'neon lime', 'electric-blue': 'electric blue', 'sun-yellow': 'sun yellow',
+  };
+  const artMap: Record<string, string> = { none: '', minimal: 'minimalist line art', marble: 'marble effect', floral: 'hand-painted floral', french: 'modern french tip' };
+  const accMap: Record<string, string> = { none: '', pearls: 'micro pearls', crystals: 'Swarovski crystals', 'gold-flakes': 'gold leaf' };
+  const shape = shapeMap[design.shape] || 'almond';
+  const color = colorMap[design.color] || design.color;
+  const art = artMap[design.art] || '';
+  const acc = accMap[design.accessory] || '';
+  return `${shape} nails, ${color}, ${design.effect.toLowerCase()} finish ${art} ${acc}, luxury manicure, studio lighting, white background, photorealistic, 4k, professional product photo`.trim();
 }
 
-function hashDesign(d: Record<string, string>): number {
-  let h = 0;
-  const s = `${d.shape}|${d.color}|${d.effect}|${d.art}|${d.accessory}`;
-  for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
-  return Math.abs(h);
+export async function generateNailImage(design: {
+  shape: string; color: string; effect: string; art: string; accessory: string;
+}): Promise<string | null> {
+  const prompt = buildPrompt(design);
+
+  try {
+    const res = await fetch('/api/generate-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Image gen error:', err);
+      return null;
+    }
+
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  } catch (err) {
+    console.error('Image generation error:', err);
+    return null;
+  }
 }
