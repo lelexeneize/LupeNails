@@ -102,7 +102,7 @@ export default function App() {
         </section>
 
         <Services onBookingClick={() => setIsBookingOpen(true)} />
-        <Gallery />
+        <Gallery onOpenBooking={() => setIsBookingOpen(true)} />
         <ViralFeed />
         
         {/* Reservation Section */}

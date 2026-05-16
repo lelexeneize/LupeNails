@@ -153,10 +153,10 @@ export const AIInspiration = ({ onOpenGenerator, onBooking }: AIInspirationProps
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(true)}
-          className="bg-brand-dark text-brand-nude p-4 rounded-full shadow-xl flex items-center gap-2 group"
+          className="bg-brand-dark text-brand-nude p-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:bg-brand-gold hover:text-brand-dark"
         >
-          <Sparkles className="w-6 h-6 text-brand-gold animate-pulse" />
-          <span className="hidden group-hover:block text-xs font-accent uppercase tracking-widest px-2">IA Inspiration</span>
+          <Sparkles className="w-5 h-5 text-brand-gold animate-pulse" />
+          <span className="text-xs font-accent uppercase tracking-widest pr-2">Inspiración con IA</span>
         </motion.button>
       </div>
 

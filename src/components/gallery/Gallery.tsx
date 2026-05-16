@@ -1,12 +1,14 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, Share2, Maximize2, X } from 'lucide-react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+
 
 const CATEGORIES = [
   'All', 'Chrome', 'French', 'Minimalist', 'Luxury', 'Clean Girl', 'Aura', '3D Art'
 ];
 
-const DESIGNS = [
+const ALL_DESIGNS = [
   { id: 1, title: 'Pearl Chrome', category: 'Chrome', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600&h=800', height: 'aspect-[3/4]' },
   { id: 2, title: 'Minimalist Line', category: 'Minimalist', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600&h=600', height: 'aspect-[1/1]' },
   { id: 3, title: 'Glazed Donut', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=400', height: 'aspect-[3/2]' },
@@ -15,13 +17,30 @@ const DESIGNS = [
   { id: 6, title: 'Gold Flakes', category: 'Luxury', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600&h=600', height: 'aspect-[1/1]' },
   { id: 7, title: '3D Chrome', category: '3D Art', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=900', height: 'aspect-[2/3]' },
   { id: 8, title: 'Nude Velvet', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600&h=750', height: 'aspect-[4/5]' },
+  // Más diseños para simular carga infinita (en un proyecto real, cargarías desde una API)
+  { id: 9, title: 'Pink Ombré', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1563310026068-5c9405b1104b?auto=format&fit=crop&q=80&w=600&h=800', height: 'aspect-[3/4]' },
+  { id: 10, title: 'Matte Black', category: 'Luxury', image: 'https://images.unsplash.com/photo-1622204801534-298312ab40a5?auto=format&fit=crop&q=80&w=600&h=600', height: 'aspect-[1/1]' },
+  { id: 11, title: 'Rainbow Glitter', category: '3D Art', image: 'https://images.unsplash.com/photo-1629833193741-64944500bc4e?auto=format&fit=crop&q=80&w=600&h=900', height: 'aspect-[2/3]' },
 ];
 
-export const Gallery = () => {
+export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedDesign, setSelectedDesign] = useState<any>(null);
+  const [visibleCount, setVisibleCount] = useState(8); // Número inicial de diseños visibles
+  const [hasMore, setHasMore] = useState(true);
 
-  const filteredDesigns = DESIGNS.filter(d => activeCategory === 'All' || d.category === activeCategory);
+  const loadMoreDesigns = () => {
+    if (visibleCount >= ALL_DESIGNS.length) {
+      setHasMore(false);
+      return;
+    }
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 4); // Cargar 4 más
+    }, 1000); // Simular delay de carga
+  };
+
+  const filteredDesigns = ALL_DESIGNS.filter(d => activeCategory === 'All' || d.category === activeCategory);
+  const visibleDesigns = filteredDesigns.slice(0, visibleCount);
 
   return (
     <section id="designs" className="py-24 px-6">
@@ -48,51 +67,63 @@ export const Gallery = () => {
         </div>
 
         <div className="masonry-grid">
-          <AnimatePresence mode="popLayout">
-            {filteredDesigns.map((design) => (
-              <motion.div
-                key={design.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-                className={`mb-4 group relative overflow-hidden rounded-3xl cursor-zoom-in ${design.height}`}
-                onClick={() => setSelectedDesign(design)}
-              >
-                <img 
-                  src={design.image} 
-                  alt={design.title} 
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-                
-                <div className="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-between p-6">
-                  <div className="flex justify-end gap-2">
-                    <button className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-brand-dark transition-all">
-                      <Heart className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-brand-dark transition-all">
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-end justify-between text-white">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">{design.category}</p>
-                      <p className="font-display text-xl">{design.title}</p>
+          <InfiniteScroll
+            dataLength={visibleDesigns.length}
+            next={loadMoreDesigns}
+            hasMore={hasMore}
+            loader={<div className="col-span-full text-center py-8"><Loader2 className="w-8 h-8 mx-auto animate-spin"/></div>}
+            className="!overflow-visible"
+          >
+            <AnimatePresence mode="popLayout">
+              {visibleDesigns.map((design) => (
+                <motion.div
+                  key={design.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.5 }}
+                  className={`mb-4 group relative overflow-hidden rounded-3xl cursor-zoom-in ${design.height}`}
+                  onClick={() => setSelectedDesign(design)}
+                >
+                  <img
+                    src={design.image}
+                    alt={design.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+
+                  <div className="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-between p-6">
+                    <div className="flex justify-end gap-2">
+                      <button className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-brand-dark transition-all">
+                        <Heart className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-brand-dark transition-all">
+                        <Share2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    <Maximize2 className="w-5 h-5 opacity-70" />
+
+                    <div className="flex items-end justify-between text-white">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-70 mb-1">{design.category}</p>
+                        <p className="font-display text-xl">{design.title}</p>
+                      </div>
+                      <Maximize2 className="w-5 h-5 opacity-70" />
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </InfiniteScroll>
         </div>
 
         <div className="mt-16 text-center">
-          <button className="premium-button border border-brand-dark/10 hover:bg-white transition-colors">
-            Cargar más diseños
+          <button
+            onClick={loadMoreDesigns}
+            disabled={!hasMore}
+            className="premium-button border border-brand-dark/10 hover:bg-white transition-colors disabled:opacity-50"
+          >
+            {hasMore ? 'Cargar más diseños' : 'Todos los diseños cargados'}
           </button>
         </div>
       </div>
@@ -133,14 +164,25 @@ export const Gallery = () => {
                   Perfecto para ocasiones especiales o un look clean girl sofisticado.
                 </p>
                 
-                <div className="flex flex-col gap-4">
-                  <button className="premium-button bg-brand-dark text-brand-nude shadow-xl">
-                    Quiero este diseño
-                  </button>
-                  <button className="premium-button border border-brand-dark/10">
-                    Guardar en favoritos
-                  </button>
-                </div>
+        <div className="flex flex-col gap-4">
+          <button
+            onClick={() => {
+              if (onOpenBooking) onOpenBooking();
+              setSelectedDesign(null);
+            }}
+            className="premium-button bg-brand-dark text-brand-nude shadow-xl"
+          >
+            Quiero este diseño
+          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button className="premium-button border border-brand-dark/10 flex items-center justify-center gap-2">
+              <Heart className="w-4 h-4" /> Guardar
+            </button>
+            <button className="premium-button border border-brand-dark/10 flex items-center justify-center gap-2">
+              <Share2 className="w-4 h-4" /> Compartir
+            </button>
+          </div>
+        </div>
               </motion.div>
             </div>
           </motion.div>
