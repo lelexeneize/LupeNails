@@ -1,9 +1,16 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar as CalendarIcon, Clock, User, X, ChevronLeft, ChevronRight, CheckCircle2, Phone, Mail } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, User, X, ChevronLeft, ChevronRight, CheckCircle2, Phone, Mail, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../services/authContext';
+
+const SERVICES = [
+  { id: 'kapping', name: 'Kapping', duration: '60 min', price: '$35', description: 'Refuerzo de uña natural' },
+  { id: 'soft-gel', name: 'Soft Gel', duration: '90 min', price: '$45', description: 'Extensiones ligeras y flexibles' },
+  { id: 'nail-art', name: 'Nail Art Luxury', duration: '30+ min', price: '+ $15', description: 'Diseños personalizados' },
+  { id: 'semi-perm', name: 'Semi Permanente', duration: '45 min', price: '$25', description: 'Color impecable 3 semanas' },
+];
 
 const PROFESSIONALS = [
   { id: 1, name: 'Sofia', role: 'Senior Artist', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200' },
@@ -16,6 +23,7 @@ const TIME_SLOTS = ['09:00', '10:30', '12:00', '14:30', '16:00', '17:30', '19:00
 export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedProfessional, setSelectedProfessional] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<any>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -28,7 +36,7 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
   const handleBack = () => setStep(s => s - 1);
 
   const handleConfirmBooking = async () => {
-    if (!selectedDate || !selectedTime || !clientName) return;
+    if (!selectedService || !selectedDate || !selectedTime || !clientName) return;
     setIsSaving(true);
     setSaveError('');
     try {
@@ -37,12 +45,13 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         clientName,
         clientPhone,
         clientEmail: user?.email || '',
-        professional: selectedProfessional.name,
-        service: 'Consulta',
+        professional: selectedProfessional?.name || 'Sin asignar',
+        service: selectedService.name,
+        duration: selectedService.duration,
+        price: selectedService.price,
         date: `${selectedDate} de Mayo 2026`,
         time: selectedTime,
         status: 'pending',
-        price: 0,
         couponCode: '',
         discountApplied: 0,
         finalPrice: 0,
@@ -78,7 +87,7 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
 
           <div className="p-12">
             <div className="flex items-center gap-4 mb-8">
-              {[1, 2, 3, 4].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <div key={`booking-step-${i}`} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-brand-dark' : 'bg-brand-dark/10'}`} />
               ))}
             </div>
@@ -124,13 +133,54 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                     onClick={handleNext}
                     className="w-full premium-button bg-brand-dark text-brand-nude disabled:opacity-30 disabled:cursor-not-allowed mt-4"
                   >
-                    Elegir Artista
+                    Elegir Servicio
                   </button>
                 </div>
               </motion.div>
             )}
 
             {step === 2 && (
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <div className="flex items-center gap-4 mb-8">
+                  <button onClick={handleBack} className="p-2 bg-white rounded-full"><ChevronLeft className="w-4 h-4" /></button>
+                  <h3 className="text-3xl italic">Elegí tu servicio</h3>
+                </div>
+                <p className="text-xs font-accent text-brand-dark/40 uppercase tracking-widest mb-6">Duración y precio por servicio</p>
+                <div className="flex flex-col gap-3">
+                  {SERVICES.map(svc => (
+                    <button 
+                      key={svc.id}
+                      onClick={() => { setSelectedService(svc); handleNext(); }}
+                      className={`group flex items-center gap-4 p-4 rounded-3xl border transition-all text-left ${
+                        selectedService?.id === svc.id 
+                          ? 'border-brand-gold bg-brand-gold/5' 
+                          : 'border-brand-dark/5 bg-white hover:border-brand-gold'
+                      }`}
+                    >
+                      <div className="w-14 h-14 bg-brand-nude rounded-2xl flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-brand-gold" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-accent font-semibold">{svc.name}</h4>
+                            <p className="text-[11px] text-brand-dark/40">{svc.description}</p>
+                          </div>
+                          <span className="text-brand-gold font-accent font-semibold">{svc.price}</span>
+                        </div>
+                        <div className="flex items-center gap-1 mt-1 text-[10px] text-brand-dark/30 font-accent uppercase tracking-wider">
+                          <Clock className="w-3 h-3" />
+                          {svc.duration}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-brand-dark/20 group-hover:text-brand-gold group-hover:translate-x-1 transition-all" />
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <div className="flex items-center gap-4 mb-8">
                   <button onClick={handleBack} className="p-2 bg-white rounded-full"><ChevronLeft className="w-4 h-4" /></button>
@@ -157,13 +207,21 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
               </motion.div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <div className="flex items-center gap-4 mb-8">
                   <button onClick={handleBack} className="p-2 bg-white rounded-full"><ChevronLeft className="w-4 h-4" /></button>
                   <div>
                     <h3 className="text-3xl mb-1 italic text-brand-dark">Mayo 2026</h3>
                     <p className="text-[10px] font-accent text-brand-dark/40 uppercase tracking-[0.2em]">Seleccioná fecha y hora</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <div className="w-full px-4 py-3 bg-white/80 rounded-2xl flex items-center gap-3 text-sm font-accent">
+                    <Sparkles className="w-4 h-4 text-brand-gold" />
+                    <span className="text-brand-dark/60">{selectedService?.name} · {selectedService?.duration}</span>
+                    <span className="ml-auto text-brand-gold font-semibold">{selectedService?.price}</span>
                   </div>
                 </div>
 
@@ -217,7 +275,7 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
               </motion.div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }} 
                 animate={{ opacity: 1, scale: 1 }}
@@ -230,7 +288,7 @@ export const BookingModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
                 </div>
                 <h3 className="text-4xl mb-4 italic">¡Reserva Confirmada!</h3>
                 <p className="text-brand-dark/60 mb-12">
-                  {clientName}, tu turno con <span className="text-brand-dark font-semibold">{selectedProfessional?.name}</span> el día <span className="text-brand-dark font-semibold">{selectedDate} de Mayo</span> a las <span className="text-brand-dark font-semibold">{selectedTime}hs</span> está agendado.
+                  {clientName}, tu turno de <span className="text-brand-dark font-semibold">{selectedService?.name}</span> con <span className="text-brand-dark font-semibold">{selectedProfessional?.name}</span> el día <span className="text-brand-dark font-semibold">{selectedDate} de Mayo</span> a las <span className="text-brand-dark font-semibold">{selectedTime}hs</span> está agendado.
                 </p>
                 
                 <div className="glass-panel p-6 rounded-3xl text-left mb-8">

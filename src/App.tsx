@@ -6,13 +6,18 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
-import { Header, BottomNav, FloatingWhatsApp } from './components/layout/Navigation';
+import { Header, BottomNav, FloatingWhatsApp, FloatingBookingCTA } from './components/layout/Navigation';
 import { Hero } from './components/home/Hero';
 import { Services } from './components/home/Services';
+import { Testimonials } from './components/home/Testimonials';
 import { Gallery } from './components/gallery/Gallery';
 import { ViralFeed } from './components/home/ViralFeed';
+import { BlogTips } from './components/home/BlogTips';
+import { Location } from './components/home/Location';
 import { Footer } from './components/layout/Footer';
 import { AIInspiration } from './components/home/AIInspiration';
+import { ChatBot } from './components/chat/ChatBot';
+import { GiftCards } from './components/gift/GiftCards';
 import { BookingModal } from './components/booking/BookingModal';
 import { NailGenerator } from './components/home/NailGenerator';
 import { AdminDashboard } from './components/AdminDashboard';
@@ -102,8 +107,12 @@ export default function App() {
         </section>
 
         <Services onBookingClick={() => setIsBookingOpen(true)} />
+        <Testimonials />
         <Gallery onOpenBooking={() => setIsBookingOpen(true)} />
+        <BlogTips />
         <ViralFeed />
+        <GiftCards />
+        <Location />
         
         {/* Reservation Section */}
         <section id="booking" className="py-32 px-6 bg-brand-nude relative overflow-hidden border-t border-brand-border/20">
@@ -134,7 +143,9 @@ export default function App() {
       <Footer onAdminClick={toggleView} />
       <BottomNav onDashboardClick={() => setIsDashboardOpen(true)} />
       <FloatingWhatsApp />
+      <FloatingBookingCTA onBookingClick={() => setIsBookingOpen(true)} />
       <AIInspiration onOpenGenerator={(design) => { openGeneratorWithDesign(design); }} onBooking={() => setIsBookingOpen(true)} />
+      <ChatBot />
        
       
       <ClientDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />

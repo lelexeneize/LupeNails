@@ -121,3 +121,19 @@ export const FloatingWhatsApp = () => (
     <MessageCircle className="w-6 h-6 fill-current" />
   </motion.a>
 );
+
+export const FloatingBookingCTA = ({ onBookingClick }: { onBookingClick: () => void }) => (
+  <motion.div
+    initial={{ y: 100 }}
+    animate={{ y: 0 }}
+    className="md:hidden fixed bottom-28 left-0 right-0 z-40 px-4"
+  >
+    <button
+      onClick={onBookingClick}
+      className="w-full py-4 bg-brand-dark text-brand-nude rounded-2xl shadow-xl text-xs font-accent uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-dark transition-all flex items-center justify-center gap-2"
+    >
+      <Calendar className="w-4 h-4" />
+      Reservar Turno
+    </button>
+  </motion.div>
+);
