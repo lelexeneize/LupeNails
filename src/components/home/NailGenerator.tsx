@@ -9,10 +9,26 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
 
 const SHAPES = [
-{ id: 'almond', name: 'Almendra', image: '/nails/almond-real.png' },
-{ id: 'coffin', name: 'Coffin', image: '/nails/coffin-real.png' },
-{ id: 'stiletto', name: 'Stiletto', image: '/nails/stiletto-real.png' },
-{ id: 'square', name: 'Cuadrada', image: '/nails/square-real.png' },
+  {
+    id: 'almond',
+    name: 'Almendra',
+    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 160'%3E%3Cpath d='M30,20 C30,10 40,0 50,0 C60,0 70,10 70,20 L70,120 C70,140 60,160 50,160 C40,160 30,140 30,120 Z' fill='%23F4B5B5' stroke='%231A1A1A' stroke-width='2'/%3E%3C/svg%3E"
+  },
+  {
+    id: 'coffin',
+    name: 'Coffin',
+    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 160'%3E%3Cpath d='M35,20 L35,0 L65,0 L65,20 L65,110 C65,130 55,160 50,160 C45,160 35,130 35,110 Z' fill='%23F4B5B5' stroke='%231A1A1A' stroke-width='2'/%3E%3C/svg%3E"
+  },
+  {
+    id: 'stiletto',
+    name: 'Stiletto',
+    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 160'%3E%3Cpath d='M35,10 C35,5 40,0 50,0 C60,0 65,5 65,10 L65,90 C65,110 55,140 50,160 C45,140 35,110 35,90 Z' fill='%23F4B5B5' stroke='%231A1A1A' stroke-width='2'/%3E%3C/svg%3E"
+  },
+  {
+    id: 'square',
+    name: 'Cuadrada',
+    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 160'%3E%3Cpath d='M30,0 L70,0 L70,140 C70,150 60,160 50,160 C40,160 30,150 30,140 Z' fill='%23F4B5B5' stroke='%231A1A1A' stroke-width='2'/%3E%3C/svg%3E"
+  },
 ];
 
 const COLORS = [
