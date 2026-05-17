@@ -1,45 +1,76 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Heart, Share2, Maximize2, X, Loader2, Sparkles } from 'lucide-react';
 
-
-const CATEGORIES = [
-  'All', 'Chrome', 'French', 'Minimalist', 'Luxury', 'Clean Girl', 'Aura', '3D Art'
-];
-
-const ALL_DESIGNS = [
-  { id: 1, title: 'Pearl Chrome', category: 'Chrome', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600&h=800', height: 'aspect-[3/4]' },
-  { id: 2, title: 'Minimalist Line', category: 'Minimalist', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600&h=600', height: 'aspect-[1/1]' },
-  { id: 3, title: 'Glazed Donut', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=400', height: 'aspect-[3/2]' },
-  { id: 4, title: 'Aura Gradient', category: 'Aura', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600&h=750', height: 'aspect-[4/5]' },
-  { id: 5, title: 'Classic French', category: 'French', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=800', height: 'aspect-[3/4]' },
-  { id: 6, title: 'Gold Flakes', category: 'Luxury', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=600&h=600', height: 'aspect-[1/1]' },
-  { id: 7, title: '3D Chrome', category: '3D Art', image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600&h=900', height: 'aspect-[2/3]' },
-  { id: 8, title: 'Nude Velvet', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600&h=750', height: 'aspect-[4/5]' },
-  // Más diseños para simular carga infinita (en un proyecto real, cargarías desde una API)
-  { id: 9, title: 'Pink Ombré', category: 'Clean Girl', image: 'https://images.unsplash.com/photo-1563310026068-5c9405b1104b?auto=format&fit=crop&q=80&w=600&h=800', height: 'aspect-[3/4]' },
-  { id: 10, title: 'Matte Black', category: 'Luxury', image: 'https://images.unsplash.com/photo-1622204801534-298312ab40a5?auto=format&fit=crop&q=80&w=600&h=600', height: 'aspect-[1/1]' },
-  { id: 11, title: 'Rainbow Glitter', category: '3D Art', image: 'https://images.unsplash.com/photo-1629833193741-64944500bc4e?auto=format&fit=crop&q=80&w=600&h=900', height: 'aspect-[2/3]' },
-];
+interface PinDesign {
+  id: string;
+  title: string;
+  category: string;
+  image: string;
+  height: string;
+  views?: string;
+}
 
 export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [selectedDesign, setSelectedDesign] = useState<any>(null);
-  const [visibleCount, setVisibleCount] = useState(8); // Número inicial de diseños visibles
+  const [selectedDesign, setSelectedDesign] = useState<PinDesign | null>(null);
+  const [designs, setDesigns] = useState<PinDesign[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(false);
 
-  const loadMoreDesigns = () => {
-    if (visibleCount >= ALL_DESIGNS.length) {
-      setHasMore(false);
-      return;
+  const fetchDesigns = useCallback(async (cat: string, off: number, append: boolean) => {
+    try {
+      if (off === 0) setLoading(true);
+      else setLoadingMore(true);
+
+      const params = new URLSearchParams({
+        category: cat,
+        offset: String(off),
+        limit: '12',
+      });
+      const res = await fetch(`/api/pins?${params}`);
+      if (!res.ok) throw new Error('Error fetching');
+      const data = await res.json();
+
+      if (append) {
+        setDesigns(prev => [...prev, ...data.designs]);
+      } else {
+        setDesigns(data.designs);
+      }
+      setHasMore(data.hasMore);
+      setOffset(data.offset);
+      if (data.categories) setCategories(['All', ...data.categories]);
+      setError(false);
+    } catch {
+      if (!append) setError(true);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-    setTimeout(() => {
-      setVisibleCount(prev => prev + 4); // Cargar 4 más
-    }, 1000); // Simular delay de carga
+  }, []);
+
+  // Carga inicial
+  useEffect(() => {
+    fetchDesigns(activeCategory, 0, false);
+  }, [activeCategory, fetchDesigns]);
+
+  // Cambiar categoría
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    setOffset(0);
+    setHasMore(true);
   };
 
-  const filteredDesigns = ALL_DESIGNS.filter(d => activeCategory === 'All' || d.category === activeCategory);
-  const visibleDesigns = filteredDesigns.slice(0, visibleCount);
+  // Cargar más
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchDesigns(activeCategory, offset, true);
+    }
+  };
 
   return (
     <section id="designs" className="py-24 px-6">
@@ -49,10 +80,10 @@ export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
           <h2 className="text-5xl md:text-6xl mb-8">Nails <span className="italic font-light text-brand-gold">Inspiration</span></h2>
           
           <div className="flex items-center gap-2 overflow-x-auto pb-4 max-w-full justify-start md:justify-center no-scrollbar">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
                 className={`px-6 py-2 rounded-full text-xs font-accent uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                   activeCategory === cat 
                     ? 'bg-brand-dark text-brand-nude' 
@@ -67,7 +98,7 @@ export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
 
         <div className="masonry-grid">
             <AnimatePresence mode="popLayout">
-              {visibleDesigns.map((design) => (
+              {designs.map((design) => (
                 <motion.div
                   key={design.id}
                   layout
@@ -108,15 +139,43 @@ export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
             </AnimatePresence>
         </div>
 
-        <div className="mt-16 text-center">
-          <button
-            onClick={loadMoreDesigns}
-            disabled={!hasMore}
-            className="premium-button border border-brand-dark/10 hover:bg-white transition-colors disabled:opacity-50"
-          >
-            {hasMore ? 'Cargar más diseños' : 'Todos los diseños cargados'}
-          </button>
-        </div>
+        {/* Loading state */}
+        {loading && (
+          <div className="flex justify-center py-16">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 text-brand-gold animate-spin" />
+              <p className="text-[10px] font-accent uppercase tracking-[0.3em] text-stone-400">Cargando diseños...</p>
+            </div>
+          </div>
+        )}
+
+        {error && !loading && (
+          <div className="text-center py-16">
+            <p className="text-[10px] font-accent uppercase tracking-[0.3em] text-stone-400 mb-4">No se pudieron cargar los diseños</p>
+            <button onClick={() => fetchDesigns(activeCategory, 0, false)} className="px-6 py-2 bg-brand-dark text-brand-nude rounded-full text-xs font-accent uppercase tracking-widest">
+              Reintentar
+            </button>
+          </div>
+        )}
+
+        {/* Load more button */}
+        {hasMore && !loading && !error && (
+          <div className="mt-16 text-center">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="premium-button border border-brand-dark/10 hover:bg-white transition-colors disabled:opacity-50"
+            >
+              {loadingMore ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Cargando...
+                </span>
+              ) : (
+                'Cargar más diseños'
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
