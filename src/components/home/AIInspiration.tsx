@@ -162,7 +162,7 @@ export const AIInspiration = ({ onOpenGenerator, onBooking }: AIInspirationProps
 
   return (
     <>
-      <div className="fixed bottom-32 right-6 z-50">
+      <div className="fixed bottom-48 right-6 z-50">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
