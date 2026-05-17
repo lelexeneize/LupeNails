@@ -64,7 +64,7 @@ export const ChatBot = () => {
       {/* Chat button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-48 right-6 z-50 bg-brand-fuchsia text-white p-3.5 rounded-full shadow-lg shadow-brand-fuchsia/30 hover:scale-110 transition-transform"
+        className="fixed bottom-64 right-6 z-50 bg-brand-fuchsia text-white p-3.5 rounded-full shadow-lg shadow-brand-fuchsia/30 hover:scale-110 transition-transform"
       >
         <MessageCircle className="w-5 h-5" />
       </button>
@@ -75,7 +75,7 @@ export const ChatBot = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] bg-white rounded-[2rem] shadow-2xl border border-brand-border/20 overflow-hidden"
+            className="fixed bottom-40 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] bg-white rounded-[2rem] shadow-2xl border border-brand-border/20 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-brand-dark text-brand-nude px-6 py-5">
