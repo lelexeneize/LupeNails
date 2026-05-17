@@ -71,11 +71,17 @@ export const AIInspiration = ({ onOpenGenerator, onBooking }: AIInspirationProps
       setLastPrompt(prompt);
       setParsed(designData);
 
+      // Safety: force prompt to start with "nail design:" — reject anything else
+      const safePrompt = prompt.startsWith('nail design:') 
+        ? prompt 
+        : `nail design: ${prompt.replace(/^(nail\s+)?(design\s*:?\s*)?/i, '').trim()}`;
+      setLastPrompt(safePrompt);
+
       // 2. Generate image with FLUX
       const res = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: safePrompt }),
       });
 
       if (res.ok) {
@@ -109,7 +115,7 @@ export const AIInspiration = ({ onOpenGenerator, onBooking }: AIInspirationProps
         effect: parsed.effect || 'Brillante',
         art: parsed.art || 'none',
         accessory: parsed.accessory || 'none',
-        color: 'rose-glaze',
+        color: 'bubble-bath',
       });
       setIsOpen(false);
     }

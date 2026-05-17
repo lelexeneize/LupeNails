@@ -3,13 +3,20 @@ function buildPrompt(design: {
 }): string {
   const shapeMap: Record<string, string> = { almond: 'almond', coffin: 'coffin', stiletto: 'stiletto', square: 'square' };
   const colorMap: Record<string, string> = {
-    'nude-silk': 'nude silk', 'milky-white': 'milky white', latte: 'latte', 'sand-dune': 'sand dune', vanilla: 'vanilla',
-    'rose-glaze': 'rose glaze', 'peachy-pink': 'peachy pink', bubblegum: 'bubblegum', 'hot-pink': 'hot pink', mauve: 'mauve',
-    'classic-red': 'classic red', 'velvet-ruby': 'velvet ruby', 'wine-cellar': 'deep wine',
-    crimson: 'crimson', coral: 'coral', 'midnight-blue': 'midnight blue', 'sage-green': 'sage green',
-    'sky-high': 'sky blue', emerald: 'emerald', lavender: 'lavender',
-    onyx: 'onyx black', 'deep-espresso': 'deep espresso', charcoal: 'charcoal', plum: 'plum',
-    'neon-lime': 'neon lime', 'electric-blue': 'electric blue', 'sun-yellow': 'sun yellow',
+    'bubble-bath': 'soft pink nude', 'funny-bunny': 'milky white', 'ballet-slippers': 'pale ballet pink',
+    'samoan-sand': 'beige nude', 'put-it-in-neutral': 'warm beige nude', 'miso-happy': 'warm caramel nude',
+    'mod-about-you': 'baby pink', 'fiji': 'sheer pink', 'strawberry-marg': 'bright strawberry pink',
+    'pink-flamenco': 'hot pink', 'cactus-rose': 'dusty rose',
+    'big-apple-red': 'classic bright red', 'russian-navy': 'deep burgundy',
+    'cajun-shrimp': 'coral red', 'got-blues-red': 'blue-toned red', 'malaga-wine': 'deep wine',
+    'lincoln-park': 'deep dark purple', 'do-you-speak-love': 'berry purple',
+    'grape- Expectations': 'grape purple', 'lavender-lace': 'soft lavender',
+    'cant-find-czech': 'deep teal', 'turquoise-caicos': 'bright turquoise',
+    'jade-black': 'emerald green', 'sky-blue': 'sky blue',
+    'black-onyx': 'black', 'chocolate-moose': 'dark chocolate brown',
+    'charcoal': 'charcoal grey', 'glitter-all-way': 'silver glitter',
+    'golden-i': 'gold', 'chrome': 'chrome mirror',
+    'neon-lime': 'neon lime green', 'electric-blue': 'electric blue', 'sun-yellow': 'sun yellow',
   };
   const artMap: Record<string, string> = { none: '', minimal: 'minimalist line art', marble: 'marble effect', floral: 'hand-painted floral', french: 'modern french tip' };
   const accMap: Record<string, string> = { none: '', pearls: 'micro pearls', crystals: 'Swarovski crystals', 'gold-flakes': 'gold leaf' };

@@ -47,15 +47,34 @@ Genera un nombre artístico viral y descripción aspiracional de 2 líneas.
 Responde SOLO JSON: { "name": "...", "description": "..." }`;
   } else if (action === 'inspire') {
     if (!query) return res.status(400).json({ error: 'query required' });
-    systemPrompt = `Actúa como estilista de uñas experta. La clienta busca: "${query}".
-Recomienda 3 diseños virales de Pinterest/Instagram.
-CADA DISEÑO DEBE SER EXCLUSIVAMENTE DE UÑAS — nada que no sean uñas decoradas.
-Cada uno con: title, description breve, elements (array de 3 string de colores/materiales),
-y prompt: descripción detallada en inglés para generar IMAGEN DE UÑAS FOTORREALISTA con IA.
-El prompt DEBE empezar con "nail design:" y describir solo uñas. Ejemplo:
-"nail design: long almond nails, pearl chrome finish, soft pink base, tiny crystal details at cuticle, studio macro photography, white gradient background, ultra realistic, 8k detail"
-NUNCA incluyas personas, rostros, cuerpos, manos completas ni nada que no sean uñas.
-Responde SOLO JSON array.`;
+    systemPrompt = `Eres un generador de prompts para imágenes de uñas. Tu ÚNICA función es crear prompts para generar imágenes EXCLUSIVAMENTE de uñas decoradas.
+
+La clienta busca: "${query}"
+
+REGLAS ESTRICTAS:
+1. El prompt DEBE empezar SIEMPRE con "nail design:" — sin excepción
+2. SOLO puedes describir uñas (nails) — NUNCA personas, rostros, cuerpos, manos completas, brazos, dedos enteros, modelos, personas, nada que no sean uñas
+3. Describe SOLO: forma de la uña, color, efecto, decoración, fondo
+4. El fondo DEBE ser "white gradient background" o "plain studio background"
+5. Incluye SIEMPRE: "studio macro photography, ultra realistic, 8k detail"
+6. NUNCA uses palabras como "hand", "woman", "girl", "model", "person", "finger", "manicure station", "salon", "beauty"
+7. Si el usuario pide algo que no sean uñas (como un paisaje, una persona, etc.), ignoralo y generá 3 diseños de uñas relacionados
+
+Devuelve SOLO un JSON array con 3 diseños. Cada diseño debe tener:
+- title: nombre creativo del diseño
+- description: descripción breve en español (1 línea)
+- prompt: prompt en inglés empezando con "nail design:" — describiendo SOLO las uñas
+- shape: "almond" | "coffin" | "stiletto" | "square"
+
+Ejemplo CORRECTO:
+[
+  {
+    "title": "Perlas Celestiales",
+    "description": "Uñas almendradas con efecto glazed y microperlas",
+    "prompt": "nail design: long almond nails with pearl chrome glaze finish, soft iridescent white base, micro pearl details at cuticle, studio macro photography, white gradient background, ultra realistic, 8k detail",
+    "shape": "almond"
+  }
+]`;
   } else if (action === 'parse') {
     if (!query) return res.status(400).json({ error: 'query required' });
     systemPrompt = `Extraé los parámetros de diseño de uñas de esta descripción: "${query}".
