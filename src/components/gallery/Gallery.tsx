@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useState, useEffect } from 'react';
-import { Heart, Share2, Maximize2, X } from 'lucide-react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import { useState } from 'react';
+import { Heart, Share2, Maximize2, X, Loader2, Sparkles } from 'lucide-react';
 
 
 const CATEGORIES = [
@@ -67,13 +66,6 @@ export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
         </div>
 
         <div className="masonry-grid">
-          <InfiniteScroll
-            dataLength={visibleDesigns.length}
-            next={loadMoreDesigns}
-            hasMore={hasMore}
-            loader={<div className="col-span-full text-center py-8"><Loader2 className="w-8 h-8 mx-auto animate-spin"/></div>}
-            className="!overflow-visible"
-          >
             <AnimatePresence mode="popLayout">
               {visibleDesigns.map((design) => (
                 <motion.div
@@ -114,7 +106,6 @@ export const Gallery = ({ onOpenBooking }: { onOpenBooking?: () => void }) => {
                 </motion.div>
               ))}
             </AnimatePresence>
-          </InfiniteScroll>
         </div>
 
         <div className="mt-16 text-center">

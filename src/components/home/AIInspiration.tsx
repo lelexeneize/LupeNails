@@ -3,7 +3,8 @@ import { Sparkles, X, ArrowRight, Loader2, Palette, Calendar, RefreshCw, Wand2 }
 import { useState } from 'react';
 import { useAuth } from '../../services/authContext';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../lib/firebase';
 
 interface AIInspirationProps {
   onOpenGenerator?: (params: { shape: string; effect: string; art: string; accessory: string; color: string }) => void;
@@ -129,10 +130,17 @@ export const AIInspiration = ({ onOpenGenerator, onBooking }: AIInspirationProps
     if (!generatedImage) return;
 
     try {
+      // Upload blob image to Firebase Storage first
+      const blobRes = await fetch(generatedImage);
+      const blob = await blobRes.blob();
+      const storageRef = ref(storage, `inspirations/${user.uid}/${Date.now()}.png`);
+      await uploadBytes(storageRef, blob);
+      const imageUrl = await getDownloadURL(storageRef);
+
       await addDoc(collection(db, 'designs'), {
         title: parsed?.name || `Diseño: ${query}`,
         description: query,
-        imageUrl: generatedImage,
+        imageUrl, // Guardamos URL permanente de Storage, no blob temporal
         elements: [parsed?.shape || '', parsed?.effect || ''],
         creatorId: user.uid,
         isPublic: false,
