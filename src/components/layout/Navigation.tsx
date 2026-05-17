@@ -44,17 +44,18 @@ export const Header = ({ onDashboardClick, onBookingClick }: { onDashboardClick:
           {user ? (
             <button 
               onClick={onDashboardClick}
-              className="flex items-center gap-3 p-1 pr-4 bg-white border border-brand-border/20 rounded-full hover:shadow-md transition-shadow"
+              className="flex items-center gap-2 p-1 pr-3 bg-white border border-brand-border/20 rounded-full hover:shadow-md transition-shadow"
             >
-              <img src={user.photoURL || ''} className="w-8 h-8 rounded-full" alt="" />
-              <span className="text-[10px] font-accent uppercase tracking-widest font-bold">Perfil</span>
+              <img src={user.photoURL || ''} className="w-7 h-7 md:w-8 md:h-8 rounded-full" alt="" />
+              <span className="text-[10px] font-accent uppercase tracking-widest font-bold hidden md:inline">Perfil</span>
             </button>
           ) : (
             <button 
               onClick={() => setIsLoginOpen(true)}
-              className="hidden md:flex items-center gap-2 h-10 px-6 border border-brand-dark/10 rounded-full text-[10px] font-accent uppercase tracking-widest hover:bg-brand-dark hover:text-white transition-all"
+              className="flex items-center gap-1.5 h-9 px-4 md:px-6 border border-brand-dark/10 rounded-full text-[10px] font-accent uppercase tracking-widest hover:bg-brand-dark hover:text-white transition-all"
             >
-              <UserIcon className="w-3 h-3" /> Ingresar
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Ingresar</span>
             </button>
           )}
           <button onClick={onBookingClick} className="hidden md:block bg-brand-dark text-brand-nude px-6 py-2 rounded-full text-xs font-accent uppercase tracking-widest hover:bg-brand-gold transition-all duration-500">
