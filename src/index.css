@@ -6,13 +6,22 @@
   --font-display: "Playfair Display", serif;
   --font-accent: "Outfit", sans-serif;
 
-  --color-brand-nude: #FDFBF7;
-  --color-brand-rose: #F4B5B5;
-  --color-brand-gold: #D4AF37;
-  --color-brand-champagne: #F7E7CE;
-  --color-brand-dark: #1A1A1A;
-  --color-brand-border: #E8D5C4;
-  
+  /* ── Paleta Lupe Nails Studio ── */
+  --color-brand-nude: #F9F6F2;        /* antes: #FDFBF7 — Porcelana (fondo principal) */
+  --color-brand-rose: #ED93B1;        /* antes: #F4B5B5 — Dusty Rose (botones hover, acentos) */
+  --color-brand-gold: #BA7517;        /* antes: #D4AF37 — Dorado cálido (badges, detalles premium) */
+  --color-brand-champagne: #FAC775;   /* antes: #F7E7CE — Champagne (highlights dorados suaves) */
+  --color-brand-dark: #2C2A27;        /* antes: #1A1A1A — Espresso (texto principal) */
+  --color-brand-border: #EDE8E2;      /* antes: #E8D5C4 — Lino (bordes y divisores) */
+
+  /* ── Colores nuevos disponibles para usar en componentes ── */
+  --color-brand-petal: #FBEAF0;       /* rosa muy suave — highlights, fondos de sección */
+  --color-brand-fuchsia: #D4537E;     /* Rose Fuchsia — CTA principal, links activos */
+  --color-brand-cherry: #72243E;      /* Cherry — texto sobre fondos rosa claro */
+  --color-brand-mauve: #AFA9EC;       /* Mauve Lila — tags, etiquetas, detalles */
+  --color-brand-ube: #534AB7;         /* Ube Purple — acento secundario oscuro */
+  --color-brand-greige: #8C8880;      /* Greige — texto secundario / placeholders */
+
   --radius-premium: 1.5rem;
 }
 
