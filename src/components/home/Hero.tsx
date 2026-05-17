@@ -1,7 +1,29 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Star, TrendingUp, Users, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+const HERO_IMAGES = [
+  { src: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=1200', label: 'Chrome Pearl Glaze' },
+  { src: '/gallery/gallery-01.png', label: 'Silver Chrome' },
+  { src: '/gallery/gallery-06.png', label: 'Glazed Donut' },
+  { src: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=1200', label: 'Almond Nude' },
+  { src: '/gallery/gallery-15.png', label: 'Holographic Dream' },
+  { src: '/gallery/gallery-04.png', label: 'French Classic' },
+];
 
 export const Hero = ({ onBookingClick }: { onBookingClick: () => void }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex(prev => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const current = HERO_IMAGES[currentIndex];
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center pt-20 px-6 overflow-hidden">
       {/* Background Decorative Elements */}
@@ -62,18 +84,38 @@ export const Hero = ({ onBookingClick }: { onBookingClick: () => void }) => {
           transition={{ duration: 1, delay: 0.2 }}
           className="relative aspect-square md:aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl"
         >
-          <img 
-            src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=1200" 
-            alt="Premium Nail Art" 
-            className="w-full h-full object-cover"
-          />
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={currentIndex}
+              src={current.src}
+              alt={current.label}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.8 }}
+              className="w-full h-full object-cover absolute inset-0"
+            />
+          </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/40 to-transparent" />
           
+          {/* Dots indicator */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {HERO_IMAGES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                  i === currentIndex ? 'bg-white w-4' : 'bg-white/40 hover:bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
+
           <div className="absolute bottom-8 left-8 right-8">
             <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-brand-dark/50 mb-1">Trending now</p>
-                <p className="font-display text-xl">Chrome Pearl Glaze</p>
+                <p className="font-display text-xl">{current.label}</p>
               </div>
               <TrendingUp className="text-brand-gold w-6 h-6" />
             </div>
